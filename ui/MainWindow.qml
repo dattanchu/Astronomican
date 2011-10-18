@@ -2,6 +2,18 @@ import Qt 4.7
 
 Rectangle {
   id: background
+  objectName: "background"
+
+  width: 800;
+  height: 600;
+
+  onWidthChanged: {
+    main_controller.SetWidth(width);
+  }
+
+  onHeightChanged: {
+    main_controller.SetHeight(height);
+  }
 
   property string text: "Using Qt class to echo this"
 
@@ -13,6 +25,7 @@ Rectangle {
   color: "black"
 
   Component.onCompleted: updateUI()
+
 
   Rectangle {
     id: button

@@ -2,6 +2,7 @@
 #define ASTRONOMICAN_SCENE_MANAGER_H_
 #include <QObject>
 #include <vector>
+#include <QSize>
 
 #include "MovableUnit.h"
 
@@ -13,8 +14,12 @@ class SceneManager : public QObject {
   Q_OBJECT
 public:
   SceneManager();
+  void SetSize (const QSize &new_size);
+  // TODO(tchu): Move to QSize GetSize() const as appropriate
+  QSize& GetSize();
 private:
   std::vector<MovableUnit> movable_units;
+  QSize size_;
 };
 
 #endif

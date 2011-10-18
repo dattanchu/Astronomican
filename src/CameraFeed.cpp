@@ -13,6 +13,9 @@ void CameraFeed::StartCapturing() {
   }
 
   is_capturing_ = true;
+  device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+  device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+
   while (is_capturing_) {
     device_ >> frame_buffer_;
     emit HasNewFrame(frame_buffer_);
