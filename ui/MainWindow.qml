@@ -15,6 +15,13 @@ Rectangle {
     main_controller.SetHeight(height);
   }
 
+  Checkerboard: {
+    id:test_board;
+    anchors.left: parent.left;
+    anchors.top: parent.top;
+
+  }
+
   property string text: "Using Qt class to echo this"
 
   function updateUI() {
