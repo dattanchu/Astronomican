@@ -26,19 +26,22 @@ void MainController::SetHeight(int new_height) {
 //  qDebug() << "Current scene size is" << scene_->GetSize();
 }
 
-QPair<int,int> MainController::GetRatio(int a, int b) {
-  int gcd = a;
-  if (a = 0)
-    gcd = b;
+int MainController::GetRatio(const int &screen_width, const int &screen_height) {
+  int gcd = screen_width;
+
+  if (screen_width == 0)
+    gcd = screen_height;
+  int a(screen_width),b(screen_height);
   while (b != 0)
   {
-    if (a > b)
-      a -= b;
-    else
-      b -= a;
+    int t = b;
+    b = a % b;
+    a = t;
   }
-  gcd = a;
-  return QPair((int)a/gcd,(int)b/gcd);
+  gcd = (a > 100)? a : 100;
+  qDebug() << "Current tile size is" << gcd;
+
+  return gcd;
 }
 
 // Does the connection of slots and signals
