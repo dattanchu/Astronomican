@@ -6,28 +6,29 @@ Rectangle {
 
   width: 800;
   height: 600;
+  signal sizeChanged(int new_width, int new_height)
+  property int tile_size: 100
 
   onWidthChanged: {
-    main_controller.SetWidth(width);
+    background.sizeChanged(width,height);
   }
 
   onHeightChanged: {
-    main_controller.SetHeight(height);
+    background.sizeChanged(width,height);
   }
 
   Grid {
     id:checker_board;
 
-    property int tile_size: main_controller.GetRatio(background.width, background.height);
-
-    rows: height/tile_size; columns: width/tile_size;
+    rows: Math.floor(background.height/background.tile_size);
+    columns: Math.floor(background.width/background.tile_size);
 
     onWidthChanged: {
-      columns: width/tile_size;
+      columns: Math.floor(background.width/background.tile_size);
     }
 
     onHeightChanged: {
-      rows: height/tile_size;
+      rows: Math.floor(background.height/background.tile_size);
     }
 
     anchors.fill: parent;
@@ -36,11 +37,15 @@ Rectangle {
     Repeater {
       model: checker_board.columns*checker_board.rows
       Rectangle {
-        width: checker_board.tile_size; height: checker_board.tile_size
-        color: (index % 2 == 0)? "black" : "white"
+        width: background.tile_size; height: background.tile_size
+        property int odd_row: Math.floor(index / checker_board.columns)%2
+        property int odd_column: (index % checker_board.columns)%2
+        color: (odd_row == 1 ^ odd_column == 1) ? "black" : "white"
       }
     }
   }
+
+
 
   property string text: "Using Qt class to echo this"
 

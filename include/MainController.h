@@ -17,12 +17,9 @@ public:
   MainController();
   ~MainController();
   void AddCameraFeed(CameraFeed* camera_feed);
-  Q_INVOKABLE void SetWidth(int new_width);
-  Q_INVOKABLE void SetHeight(int new_height);
-  //return the size of a tile in the checkerboard given the width and height of the
-  //screen as parameters
-  Q_INVOKABLE int GetRatio(const int &screen_width, const int &screen_height);
+
 public slots:
+  void SetSize(int new_width, int new_height);
   void GetReady();
   void HandleNewFrame(const cv::Mat& new_frame);
 private:

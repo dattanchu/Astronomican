@@ -16,32 +16,8 @@ void MainController::AddCameraFeed(CameraFeed *camera_feed) {
   main_camera_ = camera_feed;
 }
 
-void MainController::SetWidth(int new_width) {
-  scene_->GetSize().setWidth(new_width);
-//  qDebug() << "Current scene size is" << scene_->GetSize();
-}
-
-void MainController::SetHeight(int new_height) {
-  scene_->GetSize().setHeight(new_height);
-//  qDebug() << "Current scene size is" << scene_->GetSize();
-}
-
-int MainController::GetRatio(const int &screen_width, const int &screen_height) {
-  int gcd = screen_width;
-
-  if (screen_width == 0)
-    gcd = screen_height;
-  int a(screen_width),b(screen_height);
-  while (b != 0)
-  {
-    int t = b;
-    b = a % b;
-    a = t;
-  }
-  gcd = (a > 100)? a : 100;
-  qDebug() << "Current tile size is" << gcd;
-
-  return gcd;
+void MainController::SetSize(int new_width, int new_height) {
+  scene_->SetSize(QSize(new_width,new_height));
 }
 
 // Does the connection of slots and signals

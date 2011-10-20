@@ -5,8 +5,10 @@
 #include <QtCore>
 #include <QtGui>
 #include <QMainWindow>
+#include <QObject>
 #include "MainController.h"
 #include "CameraFeed.h"
+#include "MainWindow.h"
 
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
@@ -17,15 +19,16 @@ int main(int argc, char** argv) {
   main_controller.AddCameraFeed(&camera1);
   main_controller.GetReady();
 
-  QDeclarativeView view;
-
-  view.setResizeMode(QDeclarativeView::SizeRootObjectToView);
-  view.rootContext()->setContextProperty("camera_feed", &camera1);
-  view.rootContext()->setContextProperty("main_controller", &main_controller);
-  view.setSource(QUrl("qrc:///ui/MainWindow.qml"));
-  view.setGeometry(0, 0, 800, 600);
+  MainWindow main_window;
+//  view.rootContext()->setContextProperty("camera_feed", &camera1);
+//  view.rootContext()->setContextProperty("main_controller", &main_controller);
+  main_window.setGeometry(0, 0, 800, 600);
 //  view.showFullScreen();
-  view.show();
+
+  QObject::connect(&main_window, SIGNAL(sizeChanged(int, int)),
+                   &main_controller, SLOT(SetSize(int, int)));
+
+  main_window.show();
   camera1.StartCapturing(1);
 
   app.exec();
