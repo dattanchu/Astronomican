@@ -1,7 +1,7 @@
 import Qt 4.7
 
 Grid {
-  id:checker_board;
+  id:container;
   state: "Visible"
   property int tile_size: 100;
 
@@ -19,11 +19,11 @@ Grid {
   clip: true;
 
   Repeater {
-    model: checker_board.columns*checker_board.rows
+    model: container.columns*container.rows
     Rectangle {
-      width: checker_board.tile_size; height: checker_board.tile_size
-      property int odd_row: Math.floor(index / checker_board.columns)%2
-      property int odd_column: (index % checker_board.columns)%2
+      width: container.tile_size; height: container.tile_size
+      property int odd_row: Math.floor(index / container.columns)%2
+      property int odd_column: (index % container.columns)%2
       color: (odd_row == 1 ^ odd_column == 1) ? "black" : "white"
     }
   }
@@ -32,13 +32,13 @@ Grid {
     State {
       name: "Visible"
       PropertyChanges {
-        target: checker_board;
+        target: container;
         visible: true;
       }
     },State {
       name: "Invisible"
       PropertyChanges {
-        target: checker_board;
+        target: container;
         visible: false;
       }
     }

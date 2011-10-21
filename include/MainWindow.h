@@ -21,8 +21,10 @@ public slots:
   void SetTileSize(int new_size);
   void ShowTheBoard();
   void CleanBackGround();
+  void Draw();
 
 signals:
+  void calibrate();
   void sizeChanged(int new_width, int new_height);
 
 private:

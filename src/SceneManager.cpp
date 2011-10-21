@@ -17,3 +17,7 @@ void SceneManager::SetTileSize(const int new_tile_size) {
 QSize& SceneManager::GetSize() {
   return size_;
 }
+
+int SceneManager::GetTileSize() {
+  return tile_size_;
+}

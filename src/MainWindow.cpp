@@ -11,8 +11,15 @@ MainWindow::MainWindow() : QMainWindow()
   QGraphicsObject *background = ui->rootObject();
   connect(background, SIGNAL(sizeChanged(int, int)),
           this, SIGNAL(sizeChanged(int, int)));
-
+  connect(background, SIGNAL(draw()),
+          this, SLOT(Draw()));
+  connect(background, SIGNAL(calibrate()),
+          this, SIGNAL(calibrate()));
   setCentralWidget(this->ui);
+}
+
+void MainWindow::Draw() {
+  this->ui->repaint();
 }
 
 //void MainWindow::uiSizeChanged() {

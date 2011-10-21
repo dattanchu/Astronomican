@@ -8,6 +8,8 @@ Rectangle {
   width: 800;
   height: 600;
   signal sizeChanged(int new_width, int new_height)
+  signal draw
+  signal calibrate
   property int tile_size: 100;
 
   onWidthChanged: {
@@ -26,12 +28,7 @@ Rectangle {
 
   }
 
-//  function LoadCheckerboard() {
-//    var component = Qt.createComponent("Checkerboard.qml");
-//    if (component.status == Component.Ready) {
-//      var checkerboard = component.createObject(checker_board);
-//    }
-//  }
+
 
   anchors.fill: parent
   color: "black"
@@ -40,15 +37,12 @@ Rectangle {
 
 
   Rectangle {
-    id: camera_button
-
-    property bool pressed: false
+    id: calibration
 
     width: 100; height: 40
     anchors.right: parent.right; anchors.rightMargin: 20
     anchors.bottom: parent.bottom; anchors.bottomMargin: 20
     radius: 6
-    color: pressed ? "gray" : "white"
 
     Text {
       anchors.centerIn: parent
@@ -58,26 +52,20 @@ Rectangle {
     MouseArea {
       anchors.fill: parent
       onClicked: {
-        if (camera_button.pressed) {
-          // button pressed before StartCapturing
-          camera_feed.StartCapturing(1);
-        } else {
-          camera_feed.StopCapturing();
-        }
-
-        camera_button.pressed = !camera_button.pressed;
+        background.calibrate();
       }
     }
   }
 
-
+// Need to find a way to put the drawing of the checkerboard dynamically
+// so the board can be delete and the screen update instantly
   Rectangle {
     id: board_button
 
     property bool pressed: false
 
     width: 100; height: 40
-    anchors.right: camera_button.left; anchors.rightMargin: 20
+    anchors.right: calibration.left; anchors.rightMargin: 20
     anchors.bottom: parent.bottom; anchors.bottomMargin: 20
     radius: 6
     color: pressed ? "gray" : "white"
@@ -92,16 +80,17 @@ Rectangle {
       onClicked: {
         if (checker_board.state == "Visible") {
           checker_board.state = "Invisible";
+          background.draw();
         } else {
           checker_board.state = "Visible";
+          background.draw();
         }
 
         board_button.pressed = !board_button.pressed;
       }
     }
+
   }
-
-
 
   Rectangle {
       id: tooltip1

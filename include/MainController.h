@@ -25,6 +25,7 @@ public slots:
   void SetSize(int new_width, int new_height);
   void GetReady();
   void HandleNewFrame(const cv::Mat& new_frame);
+
 private:
   CameraFeed* main_camera_;
   SceneManager* scene_;

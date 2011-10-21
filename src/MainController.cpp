@@ -1,7 +1,7 @@
 #include "CameraFeed.h"
 #include "MainController.h"
 #include "SceneManager.h"
-
+#include "math.h";
 #include <QtCore>
 MainController::MainController() {
   main_camera_ = NULL;
@@ -43,5 +43,25 @@ void MainController::HandleNewFrame(const cv::Mat& new_frame) {
 }
 
 void MainController::CalibrateCamera() {
+
+  qDebug() << "calibrating";
+  vector<cv::Point2f> corners;
+  bool patternfound = false;
   cv::Mat camera_frame = main_camera_->Capture();
+
+
+  int tile_size = scene_->GetTileSize();
+  QSize scene_size = scene_->GetSize();
+  cv::Size checkerboard_size(std::floor(scene_size.width()/tile_size),
+                             std::floor(scene_size.height()/tile_size));
+
+  patternfound = cv::findChessboardCorners(camera_frame,
+                                                checkerboard_size,
+                                                corners,
+                                                cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK);
+
+  if(patternfound && corners.size() > 1)
+    qDebug() << "calibration passed with" << corners.size() << "founds";
+  else
+    qDebug() << "calibration failed";
 }

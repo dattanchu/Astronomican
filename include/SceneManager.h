@@ -17,6 +17,7 @@ public:
   void SetSize (const QSize &new_size);
   void SetTileSize (const int new_tile_size);
   // TODO(tchu): Move to QSize GetSize() const as appropriate
+  int GetTileSize();
   QSize& GetSize();
 private:
   std::vector<MovableUnit> movable_units;

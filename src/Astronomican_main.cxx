@@ -30,8 +30,11 @@ int main(int argc, char** argv) {
                    &main_controller, SLOT(SetSize(int, int)));
   QObject::connect(&main_controller, SIGNAL(TileSizeChanged(int)),
                    &main_window, SLOT(SetTileSize(int)));
+  QObject::connect(&main_window, SIGNAL(calibrate()),
+                   &main_controller, SLOT(CalibrateCamera()));
   main_window.show();
-  camera1.StartCapturing(1);
+//  main_controller.CalibrateCamera();
+//  camera1.StartCapturing(1);
   //TODO tchu: signal MainWindow to change into calibrating mode,
   //then use the camera to detect the board
 
