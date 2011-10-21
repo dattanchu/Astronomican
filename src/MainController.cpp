@@ -2,7 +2,12 @@
 #include "MainController.h"
 #include "SceneManager.h"
 #include "math.h";
+#include "opencv2/highgui/highgui.hpp"
+
+#include <iostream>
 #include <QtCore>
+#include <vector>
+
 MainController::MainController() {
   main_camera_ = NULL;
   scene_ = new SceneManager();
@@ -46,21 +51,26 @@ void MainController::CalibrateCamera() {
 
   qDebug() << "calibrating";
   vector<cv::Point2f> corners;
-  bool patternfound = false;
-  cv::Mat camera_frame = main_camera_->Capture();
+
+  cv::Mat view = main_camera_->Capture(), viewgray;
+  cv::imwrite("view.png",view);
 
 
   int tile_size = scene_->GetTileSize();
   QSize scene_size = scene_->GetSize();
-  cv::Size checkerboard_size(std::floor(scene_size.width()/tile_size),
-                             std::floor(scene_size.height()/tile_size));
+  cv::Size board_size(std::floor(scene_size.width()/tile_size-1),
+                             std::floor(scene_size.height()/tile_size-1));
+  //cv::Size checkerboard_size(8, 5);
 
-  patternfound = cv::findChessboardCorners(camera_frame,
-                                                checkerboard_size,
+  cv::cvtColor(view,viewgray,CV_BGR2GRAY);
+  cv::imwrite("viewgray.png",viewgray);
+
+  bool patternfound = cv::findChessboardCorners(view,
+                                                board_size,
                                                 corners,
-                                                cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK);
+                                                CV_CALIB_CB_ADAPTIVE_THRESH & CV_CALIB_CB_FAST_CHECK & CV_CALIB_CB_NORMALIZE_IMAGE);
 
-  if(patternfound && corners.size() > 1)
+  if(patternfound)
     qDebug() << "calibration passed with" << corners.size() << "founds";
   else
     qDebug() << "calibration failed";

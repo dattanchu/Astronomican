@@ -2,7 +2,8 @@
 #include "QtCore"
 
 SceneManager::SceneManager(){
-  size_ = QSize(-1, -1);
+  size_ = QSize(800, 600);
+  tile_size_ = 100;
 }
 
 void SceneManager::SetSize(const QSize &new_size) {

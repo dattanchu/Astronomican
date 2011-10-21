@@ -3,6 +3,7 @@
 #include <QObject>
 #include <cv.h>
 #include <highgui.h>
+
 class CameraFeed : public QObject {
   Q_OBJECT
 public:

@@ -31,7 +31,7 @@ Rectangle {
 
 
   anchors.fill: parent
-  color: "black"
+  color: "White"
 
   Component.onCompleted: updateUI()
 
@@ -57,8 +57,6 @@ Rectangle {
     }
   }
 
-// Need to find a way to put the drawing of the checkerboard dynamically
-// so the board can be delete and the screen update instantly
   Rectangle {
     id: board_button
 

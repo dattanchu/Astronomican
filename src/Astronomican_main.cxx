@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
                    &main_controller, SLOT(CalibrateCamera()));
   main_window.show();
 //  main_controller.CalibrateCamera();
-//  camera1.StartCapturing(1);
+  camera1.StartCapturing(1);
   //TODO tchu: signal MainWindow to change into calibrating mode,
   //then use the camera to detect the board
 
