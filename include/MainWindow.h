@@ -5,7 +5,9 @@
 #include <QtDeclarative/QDeclarativeView>
 #include <QDesktopWidget>
 #include <QUrl>
+#include <cv.h>
 #include <string>
+
 
 class MainWindow : public QMainWindow
 {
@@ -16,7 +18,9 @@ public:
   ~MainWindow();
 
 public slots:
-  void uiSizeChanged();
+  void SetTileSize(int new_size);
+  void ShowTheBoard();
+  void CleanBackGround();
 
 signals:
   void sizeChanged(int new_width, int new_height);

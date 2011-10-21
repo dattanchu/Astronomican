@@ -1,5 +1,6 @@
 import Qt 4.7
 
+
 Rectangle {
   id: background
   objectName: "background"
@@ -7,7 +8,7 @@ Rectangle {
   width: 800;
   height: 600;
   signal sizeChanged(int new_width, int new_height)
-  property int tile_size: 100
+  property int tile_size: 100;
 
   onWidthChanged: {
     background.sizeChanged(width,height);
@@ -17,41 +18,20 @@ Rectangle {
     background.sizeChanged(width,height);
   }
 
-  Grid {
-    id:checker_board;
-
-    rows: Math.floor(background.height/background.tile_size);
-    columns: Math.floor(background.width/background.tile_size);
-
-    onWidthChanged: {
-      columns: Math.floor(background.width/background.tile_size);
-    }
-
-    onHeightChanged: {
-      rows: Math.floor(background.height/background.tile_size);
-    }
-
-    anchors.fill: parent;
-    clip: true;
-
-    Repeater {
-      model: checker_board.columns*checker_board.rows
-      Rectangle {
-        width: background.tile_size; height: background.tile_size
-        property int odd_row: Math.floor(index / checker_board.columns)%2
-        property int odd_column: (index % checker_board.columns)%2
-        color: (odd_row == 1 ^ odd_column == 1) ? "black" : "white"
-      }
-    }
-  }
-
-
+  Checkerboard {id: checker_board; tile_size: background.tile_size}
 
   property string text: "Using Qt class to echo this"
 
   function updateUI() {
 
   }
+
+//  function LoadCheckerboard() {
+//    var component = Qt.createComponent("Checkerboard.qml");
+//    if (component.status == Component.Ready) {
+//      var checkerboard = component.createObject(checker_board);
+//    }
+//  }
 
   anchors.fill: parent
   color: "black"
@@ -90,8 +70,9 @@ Rectangle {
     }
   }
 
+
   Rectangle {
-    id: checkerboard_button
+    id: board_button
 
     property bool pressed: false
 
@@ -103,23 +84,24 @@ Rectangle {
 
     Text {
       anchors.centerIn: parent
-      text: "checkerboard"
+      text: "board"
     }
 
     MouseArea {
       anchors.fill: parent
       onClicked: {
-        if (checkerboard_button.pressed) {
-          // button pressed before StartCapturing
-          checker_board.show();
+        if (checker_board.state == "Visible") {
+          checker_board.state = "Invisible";
         } else {
-          checker_board.hide();
+          checker_board.state = "Visible";
         }
 
-        checkerboard_button.pressed = !checkerboard_button.pressed;
+        board_button.pressed = !board_button.pressed;
       }
     }
   }
+
+
 
   Rectangle {
       id: tooltip1
@@ -138,6 +120,8 @@ Rectangle {
     color: "white"
   }
   }
+
+
   states: [
       State {
           name: "State1"

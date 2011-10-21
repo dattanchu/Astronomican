@@ -15,11 +15,13 @@ class SceneManager : public QObject {
 public:
   SceneManager();
   void SetSize (const QSize &new_size);
+  void SetTileSize (const int new_tile_size);
   // TODO(tchu): Move to QSize GetSize() const as appropriate
   QSize& GetSize();
 private:
   std::vector<MovableUnit> movable_units;
   QSize size_;
+  int tile_size_;
 };
 
 #endif

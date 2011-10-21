@@ -13,9 +13,13 @@ public slots:
   void StartCapturing();
   void StartCapturing(int device_id);
   void StopCapturing();
+  cv::Mat Capture();
+//  void StartCalibrating(cv::Size pattern_size);
+//  void StopCalibrating();
 private:
   cv::Mat frame_buffer_;
   bool is_capturing_;
+//  bool is_calibrating_;
   cv::VideoCapture device_;
 };
 

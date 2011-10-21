@@ -17,8 +17,11 @@ public:
   MainController();
   ~MainController();
   void AddCameraFeed(CameraFeed* camera_feed);
+signals:
+  void TileSizeChanged(int new_tile_size);
 
 public slots:
+  void CalibrateCamera();
   void SetSize(int new_width, int new_height);
   void GetReady();
   void HandleNewFrame(const cv::Mat& new_frame);
