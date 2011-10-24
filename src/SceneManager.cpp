@@ -11,14 +11,16 @@ void SceneManager::SetSize(const QSize &new_size) {
     qDebug() << "Current size is:" << size_;
 }
 
-void SceneManager::SetTileSize(const int new_tile_size) {
-  tile_size_ = new_tile_size;
-}
-
 QSize& SceneManager::GetSize() {
   return size_;
+}
+
+void SceneManager::SetTileSize(const int new_tile_size) {
+  tile_size_ = new_tile_size;
 }
 
 int SceneManager::GetTileSize() {
   return tile_size_;
 }
+
+

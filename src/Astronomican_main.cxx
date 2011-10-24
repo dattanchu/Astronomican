@@ -28,8 +28,8 @@ int main(int argc, char** argv) {
 
   QObject::connect(&main_window, SIGNAL(sizeChanged(int, int)),
                    &main_controller, SLOT(SetSize(int, int)));
-  QObject::connect(&main_controller, SIGNAL(TileSizeChanged(int)),
-                   &main_window, SLOT(SetTileSize(int)));
+  QObject::connect(&main_window, SIGNAL(tileSizeChanged(int)),
+                   &main_controller, SLOT(TileSizeChanged(int)));
   QObject::connect(&main_window, SIGNAL(calibrate()),
                    &main_controller, SLOT(CalibrateCamera()));
   main_window.show();

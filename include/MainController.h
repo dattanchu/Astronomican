@@ -18,9 +18,10 @@ public:
   ~MainController();
   void AddCameraFeed(CameraFeed* camera_feed);
 signals:
-  void TileSizeChanged(int new_tile_size);
+
 
 public slots:
+  void TileSizeChanged(int new_tile_size);
   void CalibrateCamera();
   void SetSize(int new_width, int new_height);
   void GetReady();

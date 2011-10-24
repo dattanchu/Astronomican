@@ -15,6 +15,15 @@ MainWindow::MainWindow() : QMainWindow()
           this, SLOT(Draw()));
   connect(background, SIGNAL(calibrate()),
           this, SIGNAL(calibrate()));
+  connect(background, SIGNAL(sizeChanged(int,int)),
+          this, SLOT(uiSizeChanged()));
+
+
+  emit(sizeChanged(
+         background->property("width").toInt(),
+         background->property("height").toInt()
+         ));
+
   setCentralWidget(this->ui);
 }
 
@@ -22,25 +31,28 @@ void MainWindow::Draw() {
   this->ui->repaint();
 }
 
-//void MainWindow::uiSizeChanged() {
-//  QGraphicsObject *background = ui->rootObject();
-//  int a(background->property("width").toInt()), b(background->property("height").toInt());
-//  while (b != 0)
-//  {
-//    int t = b;
-//    b = a % b;
-//    a = t;
-//  }
-//  int gcd = (a > 100)? a : 100;
-
-//  qDebug() << "Current tile size is" << gcd;
-//  background->setProperty("tile_size",gcd);
-//}
-
-void MainWindow::SetTileSize(int new_size) {
+void MainWindow::uiSizeChanged() {
   QGraphicsObject *background = ui->rootObject();
+  int a(background->property("width").toInt()),
+      b(background->property("height").toInt());
+
+  while (b != 0)
+  {
+    int t = b;
+    b = a % b;
+    a = t;
+  }
+  int new_size = (a > 200)? a : 200;
+
+  qDebug() << "Current tile size is" << new_size;
   background->setProperty("tile_size",new_size);
+  emit (tileSizeChanged(new_size));
 }
+
+//void MainWindow::SetTileSize(int new_size) {
+//  QGraphicsObject *background = ui->rootObject();
+//  background->setProperty("tile_size",new_size);
+//}
 
 MainWindow::~MainWindow()
 {

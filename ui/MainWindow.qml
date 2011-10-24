@@ -10,7 +10,7 @@ Rectangle {
   signal sizeChanged(int new_width, int new_height)
   signal draw
   signal calibrate
-  property int tile_size: 100;
+  property int tile_size: 200;
 
   onWidthChanged: {
     background.sizeChanged(width,height);
@@ -20,7 +20,17 @@ Rectangle {
     background.sizeChanged(width,height);
   }
 
-  Checkerboard {id: checker_board; tile_size: background.tile_size}
+  Rectangle {
+    id: board_container;
+    objectName:"board_container";
+
+    anchors.fill: parent;
+    anchors.margins: background.tile_size/2;
+    clip:true;
+    color:"white"
+
+    Checkerboard {id: checker_board; tile_size: background.tile_size;}
+  }
 
   property string text: "Using Qt class to echo this"
 

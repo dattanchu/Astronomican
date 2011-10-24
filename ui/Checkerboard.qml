@@ -3,7 +3,7 @@ import Qt 4.7
 Grid {
   id:container;
   state: "Visible"
-  property int tile_size: 100;
+  property int tile_size;
 
   rows: Math.floor(height/tile_size);
   columns: Math.floor(width/tile_size);
