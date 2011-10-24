@@ -1,133 +1,86 @@
 import Qt 4.7
-
+import QtQuick 1.0
 
 Rectangle {
-  id: background
-  objectName: "background"
+    id: background
+    objectName: "background"
 
-  width: 800;
-  height: 600;
-  signal sizeChanged(int new_width, int new_height)
-  signal draw
-  signal calibrate
-  property int tile_size: 200;
+    width: 800;
+    height: 600;
+    signal sizeChanged(int new_width, int new_height)
+    signal draw
+    signal calibrate
+    property int tile_size: 200;
 
-  onWidthChanged: {
-    background.sizeChanged(width,height);
-  }
+    anchors.fill: parent
+    color: "White"
 
-  onHeightChanged: {
-    background.sizeChanged(width,height);
-  }
-
-  Rectangle {
-    id: board_container;
-    objectName:"board_container";
-
-    anchors.fill: parent;
-    anchors.margins: background.tile_size/2;
-    clip:true;
-    color:"white"
-
-    Checkerboard {id: checker_board; tile_size: background.tile_size;}
-  }
-
-  property string text: "Using Qt class to echo this"
-
-  function updateUI() {
-
-  }
-
-
-
-  anchors.fill: parent
-  color: "White"
-
-  Component.onCompleted: updateUI()
-
-
-  Rectangle {
-    id: calibration
-
-    width: 100; height: 40
-    anchors.right: parent.right; anchors.rightMargin: 20
-    anchors.bottom: parent.bottom; anchors.bottomMargin: 20
-    radius: 6
-
-    Text {
-      anchors.centerIn: parent
-      text: "camera"
+    onWidthChanged: {
+        background.sizeChanged(width,height);
     }
 
-    MouseArea {
-      anchors.fill: parent
-      onClicked: {
-        background.calibrate();
-      }
-    }
-  }
-
-  Rectangle {
-    id: board_button
-
-    property bool pressed: false
-
-    width: 100; height: 40
-    anchors.right: calibration.left; anchors.rightMargin: 20
-    anchors.bottom: parent.bottom; anchors.bottomMargin: 20
-    radius: 6
-    color: pressed ? "gray" : "white"
-
-    Text {
-      anchors.centerIn: parent
-      text: "board"
+    onHeightChanged: {
+        background.sizeChanged(width,height);
     }
 
-    MouseArea {
-      anchors.fill: parent
-      onClicked: {
-        if (checker_board.state == "Visible") {
-          checker_board.state = "Invisible";
-          background.draw();
-        } else {
-          checker_board.state = "Visible";
-          background.draw();
+
+    Checkerboard {
+        id: checker_board;
+        tile_size: background.tile_size;
+    }
+
+    Rectangle {
+        id: calibration
+
+        width: 100; height: 40
+        anchors.right: parent.right; anchors.rightMargin: 20
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 20
+        radius: 6
+
+        Text {
+            anchors.centerIn: parent
+            text: "camera"
         }
 
-        board_button.pressed = !board_button.pressed;
-      }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                background.calibrate();
+            }
+        }
     }
 
-  }
+    Rectangle {
+        id: board_button
 
-  Rectangle {
-      id: tooltip1
-      x: 78
-      y: -46
-      width: 200
-      height: 200
-      color: "#ffffff"
-      visible: false
+        property bool pressed: false
 
-      Text {
-        id: text
-        x: -78
-        y: 37
-        anchors.centerIn: parent
-    color: "white"
-  }
-  }
+        width: 100; height: 40
+        anchors.right: calibration.left; anchors.rightMargin: 20
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 20
+        radius: 6
+        color: pressed ? "gray" : "white"
 
+        Text {
+            anchors.centerIn: parent
+            text: "board"
+        }
 
-  states: [
-      State {
-          name: "State1"
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                if (checker_board.state == "Visible") {
+                    checker_board.state = "Invisible";
+                    background.draw();
+                } else {
+                    checker_board.state = "Visible";
+                    background.draw();
+                }
 
-          PropertyChanges {
-            target: tooltip1
-            radius: 10
-            visible: true
-          }
-      }
-  ]
+                board_button.pressed = !board_button.pressed;
+            }
+        }
+
+    }
+
 }

@@ -3,6 +3,12 @@ import Qt 4.7
 Grid {
   id:container;
   state: "Visible"
+
+  anchors.fill: parent;
+  anchors.margins: tile_size/2;
+
+  clip: true;
+
   property int tile_size;
 
   rows: Math.floor(height/tile_size);
@@ -14,9 +20,6 @@ Grid {
   onHeightChanged: {
     rows: Math.floor(height/tile_size);
   }
-
-  anchors.fill: parent;
-  clip: true;
 
   Repeater {
     model: container.columns*container.rows
@@ -43,5 +46,6 @@ Grid {
       }
     }
   ]
+
 }
 
