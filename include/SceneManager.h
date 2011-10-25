@@ -3,6 +3,7 @@
 #include <QObject>
 #include <vector>
 #include <QSize>
+#include <cv.h>
 
 #include "MovableUnit.h"
 
@@ -18,9 +19,15 @@ public:
   void SetTileSize (const int new_tile_size);
   // TODO(tchu): Move to QSize GetSize() const as appropriate
   int GetTileSize();
+  std::vector<cv::Point2f> GetWindowViewLandmarks();
+  std::vector<cv::Point2f> GetCameraViewLandmarks();
+  void SetWindowViewLandmarks(std::vector<cv::Point2f> new_landmarks);
+  void SetCameraViewLandmarks(std::vector<cv::Point2f> new_landmarks);
   QSize& GetSize();
 private:
   std::vector<MovableUnit> movable_units;
+  std::vector<cv::Point2f> window_view_landmarks;
+  std::vector<cv::Point2f> camera_view_landmarks;
   QSize size_;
   int tile_size_;
 };

@@ -22,6 +22,7 @@ public slots:
   void ShowTheBoard();
   void CleanBackGround();
   void uiSizeChanged();
+  void resize();
   void Draw();
 
 signals:

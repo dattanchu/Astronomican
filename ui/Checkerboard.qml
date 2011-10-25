@@ -27,25 +27,30 @@ Grid {
       width: container.tile_size; height: container.tile_size
       property int odd_row: Math.floor(index / container.columns)%2
       property int odd_column: (index % container.columns)%2
-      color: (odd_row == 1 ^ odd_column == 1) ? "black" : "white"
+      color: (odd_row == 1 ^ odd_column == 1) ? "white" : "black"
     }
   }
 
-  states: [
-    State {
-      name: "Visible"
-      PropertyChanges {
-        target: container;
-        visible: true;
-      }
-    },State {
-      name: "Invisible"
-      PropertyChanges {
-        target: container;
-        visible: false;
-      }
-    }
-  ]
+  function destroy() {
+    console.log("destroy the checkerboard");
+    container.destroy();
+  }
+
+//  states: [
+//    State {
+//      name: "Visible"
+//      PropertyChanges {
+//        target: container;
+//        visible: true;
+//      }
+//    },State {
+//      name: "Invisible"
+//      PropertyChanges {
+//        target: container;
+//        visible: false;
+//      }
+//    }
+//  ]
 
 }
 

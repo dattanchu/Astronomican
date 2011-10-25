@@ -8,6 +8,7 @@ MainWindow::MainWindow() : QMainWindow()
   this->ui->setSource(QUrl("qrc:///ui/MainWindow.qml"));
   this->ui->setResizeMode(QDeclarativeView::SizeRootObjectToView);
 
+
   QGraphicsObject *background = ui->rootObject();
   connect(background, SIGNAL(sizeChanged(int, int)),
           this, SIGNAL(sizeChanged(int, int)));
@@ -17,7 +18,8 @@ MainWindow::MainWindow() : QMainWindow()
           this, SIGNAL(calibrate()));
   connect(background, SIGNAL(sizeChanged(int,int)),
           this, SLOT(uiSizeChanged()));
-
+  connect(background, SIGNAL(resize()),
+          this, SLOT(resize()));
 
   emit(sizeChanged(
          background->property("width").toInt(),
@@ -31,6 +33,13 @@ void MainWindow::Draw() {
   this->ui->repaint();
 }
 
+void MainWindow::resize() {
+  if(!isMaximized())
+    showFullScreen();
+  else
+    showNormal();
+}
+
 void MainWindow::uiSizeChanged() {
   QGraphicsObject *background = ui->rootObject();
   int a(background->property("width").toInt()),
@@ -42,7 +51,7 @@ void MainWindow::uiSizeChanged() {
     b = a % b;
     a = t;
   }
-  int new_size = (a > 200)? a : 200;
+  int new_size = (a > 170)? a : 170;
 
   qDebug() << "Current tile size is" << new_size;
   background->setProperty("tile_size",new_size);

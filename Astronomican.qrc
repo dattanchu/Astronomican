@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>ui/MainWindow.qml</file>
         <file>ui/Checkerboard.qml</file>
+        <file>ui/core.js</file>
     </qresource>
 </RCC>

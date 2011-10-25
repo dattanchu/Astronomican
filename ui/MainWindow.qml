@@ -1,5 +1,6 @@
 import Qt 4.7
 import QtQuick 1.0
+import "core.js" as logic
 
 Rectangle {
     id: background
@@ -10,10 +11,12 @@ Rectangle {
     signal sizeChanged(int new_width, int new_height)
     signal draw
     signal calibrate
-    property int tile_size: 200;
+    signal resize
+    property int tile_size: 170;
+    property bool board_alive: false;
 
-    anchors.fill: parent
-    color: "White"
+    anchors.fill: parent;
+    color: "White";
 
     onWidthChanged: {
         background.sizeChanged(width,height);
@@ -23,11 +26,20 @@ Rectangle {
         background.sizeChanged(width,height);
     }
 
+//    function createCheckerBoard() {
+//        var component = Qt.createComponent("Checkerboard.qml");
+//        var checker_board = component.createObject(background);
+//        if(checker_board != null) {
+//          checker_board.id = 'checker_board'
+//          checker_board.tile_size = background.tile_size;
+//        }
+//        background.board_alive = true;
+//    }
 
-    Checkerboard {
-        id: checker_board;
-        tile_size: background.tile_size;
-    }
+//    Checkerboard {
+//      id: checker_board;
+//      tile_size: background.tile_size;
+//    }
 
     Rectangle {
         id: calibration
@@ -51,12 +63,33 @@ Rectangle {
     }
 
     Rectangle {
+        id: resize
+
+        width: 100; height: 40
+        anchors.right: calibration.left; anchors.rightMargin: 20
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 20
+        radius: 6
+
+        Text {
+            anchors.centerIn: parent
+            text: "resize"
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                background.resize();
+            }
+        }
+    }
+
+    Rectangle {
         id: board_button
 
         property bool pressed: false
 
         width: 100; height: 40
-        anchors.right: calibration.left; anchors.rightMargin: 20
+        anchors.right: resize.left; anchors.rightMargin: 20
         anchors.bottom: parent.bottom; anchors.bottomMargin: 20
         radius: 6
         color: pressed ? "gray" : "white"
@@ -69,15 +102,14 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                if (checker_board.state == "Visible") {
-                    checker_board.state = "Invisible";
-                    background.draw();
-                } else {
-                    checker_board.state = "Visible";
-                    background.draw();
-                }
-
-                board_button.pressed = !board_button.pressed;
+              if(!background.board_alive)
+              {
+                logic.createCheckerBoard();
+              }
+              else
+              {
+                logic.deleteCheckerBoard();
+              }
             }
         }
 

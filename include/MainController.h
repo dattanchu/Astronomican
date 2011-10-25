@@ -30,6 +30,8 @@ public slots:
 private:
   CameraFeed* main_camera_;
   SceneManager* scene_;
+
+  bool FLIP_CAMERA_VIEW;
 };
 
 #endif

@@ -23,4 +23,18 @@ int SceneManager::GetTileSize() {
   return tile_size_;
 }
 
+std::vector<cv::Point2f> SceneManager::GetWindowViewLandmarks() {
+    return window_view_landmarks;
+}
 
+void SceneManager::SetWindowViewLandmarks(std::vector<cv::Point2f> new_landmarks) {
+    window_view_landmarks = new_landmarks;
+}
+
+std::vector<cv::Point2f> SceneManager::GetCameraViewLandmarks() {
+    return camera_view_landmarks;
+}
+
+void SceneManager::SetCameraViewLandmarks(std::vector<cv::Point2f> new_landmarks) {
+    window_view_landmarks = new_landmarks;
+}
