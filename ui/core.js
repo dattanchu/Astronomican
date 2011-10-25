@@ -1,8 +1,9 @@
 var drawAbleObjects = new Array();
 var checkerBoard;
+var boardSrc = "Checkerboard.qml";
+var component = Qt.createComponent(boardSrc);
 
 function createCheckerBoard() {
-  var component = Qt.createComponent("Checkerboard.qml");
 
   if(component.status == Component.Ready) {
     var dynamicObject = component.createObject(background)
@@ -12,8 +13,8 @@ function createCheckerBoard() {
       console.log(compoent.errorString());
       return false;
     }
-
     dynamicObject.tile_size = background.tile_size;
+    checkerBoard = dynamicObject;
   } else {
     console.log("error loading checkerboard component");
     console.log(component.errorString());
@@ -30,6 +31,7 @@ function deleteCheckerBoard() {
   }
   else
   {
+    console.log("deleting checkerboard");
     checkerBoard.destroy();
   }
 }

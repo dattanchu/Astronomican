@@ -1,6 +1,6 @@
 import Qt 4.7
 import QtQuick 1.0
-import "core.js" as logic
+import "core.js" as Logic
 
 Rectangle {
     id: background
@@ -104,11 +104,13 @@ Rectangle {
             onClicked: {
               if(!background.board_alive)
               {
-                logic.createCheckerBoard();
+                Logic.createCheckerBoard();
+                background.board_alive = true;
               }
               else
               {
-                logic.deleteCheckerBoard();
+                Logic.deleteCheckerBoard();
+                background.board_alive = false;
               }
             }
         }
