@@ -4,6 +4,7 @@
 
 MainWindow::MainWindow() : QMainWindow()
 {
+
   this->ui = new QDeclarativeView;
   this->ui->setSource(QUrl("qrc:///ui/MainWindow.qml"));
   this->ui->setResizeMode(QDeclarativeView::SizeRootObjectToView);
@@ -17,9 +18,11 @@ MainWindow::MainWindow() : QMainWindow()
   connect(background, SIGNAL(calibrate()),
           this, SIGNAL(calibrate()));
   connect(background, SIGNAL(sizeChanged(int,int)),
-          this, SLOT(uiSizeChanged()));
+          this, SLOT(UiSizeChanged()));
   connect(background, SIGNAL(resize()),
-          this, SLOT(resize()));
+          this, SLOT(Resize()));
+  connect(background, SIGNAL(detect()),
+          this, SIGNAL(detect()));
 
   emit(sizeChanged(
          background->property("width").toInt(),
@@ -29,18 +32,21 @@ MainWindow::MainWindow() : QMainWindow()
   setCentralWidget(this->ui);
 }
 
-void MainWindow::Draw() {
-  this->ui->repaint();
+void MainWindow::DrawCircle(MovableUnit unit) {
+  QGraphicsObject *background = ui->rootObject();
+  QMetaObject::invokeMethod(background, "createCircle",
+                            Q_ARG(MovableUnit, unit)
+                            );
 }
 
-void MainWindow::resize() {
+void MainWindow::Resize() {
   if(!isMaximized())
     showFullScreen();
   else
     showNormal();
 }
 
-void MainWindow::uiSizeChanged() {
+void MainWindow::UiSizeChanged() {
   QGraphicsObject *background = ui->rootObject();
   int a(background->property("width").toInt()),
       b(background->property("height").toInt());

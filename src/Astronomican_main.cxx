@@ -12,6 +12,7 @@
 
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
+  qmlRegisterType<MovableUnit>("Unit", 1.0, "MovableUnit");
 
 
   MainController main_controller;
@@ -32,9 +33,12 @@ int main(int argc, char** argv) {
                    &main_controller, SLOT(TileSizeChanged(int)));
   QObject::connect(&main_window, SIGNAL(calibrate()),
                    &main_controller, SLOT(CalibrateCamera()));
+  QObject::connect(&main_window, SIGNAL(detect()),
+                   &main_controller, SLOT(DetectNewObject()));
+
   main_window.show();
 //  main_controller.CalibrateCamera();
-  camera1.StartCapturing(1);
+  camera1.StartCapturing(0);
   //TODO tchu: signal MainWindow to change into calibrating mode,
   //then use the camera to detect the board
 

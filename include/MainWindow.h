@@ -2,12 +2,14 @@
 #define ASTRONOMICAN_MAIN_WINDOW_H_
 
 #include <QMainWindow>
-#include <QtDeclarative/QDeclarativeView>
 #include <QDesktopWidget>
 #include <QUrl>
+#include <QtDeclarative/QDeclarativeView>
+#include <QtScript/QScriptEngine>
 #include <cv.h>
 #include <string>
 
+#include "MovableUnit.h"
 
 class MainWindow : public QMainWindow
 {
@@ -16,16 +18,16 @@ class MainWindow : public QMainWindow
 public:
   MainWindow();
   ~MainWindow();
-
 public slots:
 //  void SetTileSize(int new_size);
   void ShowTheBoard();
   void CleanBackGround();
-  void uiSizeChanged();
-  void resize();
-  void Draw();
+  void UiSizeChanged();
+  void Resize();
+  void DrawCircle(MovableUnit unit);
 
 signals:
+  void detect();
   void calibrate();
   void sizeChanged(int new_width, int new_height);
   void tileSizeChanged(int new_size);

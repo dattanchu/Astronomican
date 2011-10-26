@@ -21,6 +21,7 @@ private:
   // pointing down (similar to the indexing of matrices)
   QPoint location_;
   float radius_; // This probably will only be choices among {28, 55???}
+  int id_; //unique ID for tracking
 };
 
 #endif

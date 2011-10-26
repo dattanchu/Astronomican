@@ -1,7 +1,13 @@
 var drawAbleObjects = new Array();
+/**
+  TChu Note: have to make sure that the javascript data is
+  synced with the data in the application logic or it gonna create
+  artifacts on the qml
+  */
 var checkerBoard;
 var boardSrc = "Checkerboard.qml";
 var component = Qt.createComponent(boardSrc);
+
 
 function createCheckerBoard() {
 

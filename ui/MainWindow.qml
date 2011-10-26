@@ -12,6 +12,7 @@ Rectangle {
     signal draw
     signal calibrate
     signal resize
+    signal detect
     property int tile_size: 170;
     property bool board_alive: false;
 
@@ -112,6 +113,30 @@ Rectangle {
                 Logic.deleteCheckerBoard();
                 background.board_alive = false;
               }
+            }
+        }
+
+    }
+    Rectangle {
+        id: detect
+
+        property bool pressed: false
+
+        width: 100; height: 40
+        anchors.right: board_button.left; anchors.rightMargin: 20
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 20
+        radius: 6
+        color: pressed ? "gray" : "white"
+
+        Text {
+            anchors.centerIn: parent
+            text: "detect"
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+              background.detect();
             }
         }
 
