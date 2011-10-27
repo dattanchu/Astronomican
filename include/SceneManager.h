@@ -15,7 +15,9 @@ class SceneManager : public QObject {
   Q_OBJECT
 public:
   SceneManager();
-  void TrackNewMovableUnit(MovableUnit new_unit);
+  void TrackNewMovableUnit(MovableUnit *new_unit);
+  int TrackingUnitsNumber();
+  void ClearTracker();
   void SetSize (const QSize &new_size);
   void SetTileSize (const int new_tile_size);
   // TODO(tchu): Move to QSize GetSize()Tracconst as appropriate
@@ -26,9 +28,10 @@ public:
   void SetWindowViewLandmarks(const std::vector<cv::Point2f>& new_landmarks);
   void SetCameraViewLandmarks(const std::vector<cv::Point2f>& new_landmarks);
   void SetCameraToDisplayHomo(const cv::Mat& new_homo);
+  void DrawAllUnits();
   QSize& GetSize();
 private:
-  std::vector<MovableUnit> movable_units;
+  std::vector<MovableUnit*> movable_units;
   std::vector<cv::Point2f> window_view_landmarks;
   std::vector<cv::Point2f> camera_view_landmarks;
   cv::Mat camera_to_display_homography;

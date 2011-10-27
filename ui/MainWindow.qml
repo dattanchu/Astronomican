@@ -9,10 +9,10 @@ Rectangle {
     width: 800;
     height: 600;
     signal sizeChanged(int new_width, int new_height)
-    signal draw
     signal calibrate
     signal resize
     signal detect
+    signal screencap
     property int tile_size: 170;
     property bool board_alive: false;
 
@@ -137,6 +137,31 @@ Rectangle {
             anchors.fill: parent
             onClicked: {
               background.detect();
+            }
+        }
+
+    }
+
+    Rectangle {
+        id: capture_screen
+
+        property bool pressed: false
+
+        width: 100; height: 40
+        anchors.right: detect.left; anchors.rightMargin: 20
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 20
+        radius: 6
+        color: pressed ? "gray" : "white"
+
+        Text {
+            anchors.centerIn: parent
+            text: "screencap"
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+              background.screencap();
             }
         }
 

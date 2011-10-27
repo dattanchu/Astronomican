@@ -1,18 +1,23 @@
 #include <QApplication>
 #include <QtDeclarative/QDeclarativeView>
 #include <QtDeclarative/QDeclarativeContext>
+#include <QDeclarativeEngine>
+#include <QDeclarativeComponent>
 #include <QSize>
 #include <QtCore>
 #include <QtGui>
 #include <QMainWindow>
 #include <QObject>
+
+
 #include "MainController.h"
 #include "CameraFeed.h"
 #include "MainWindow.h"
+#include "MovableUnit.h"
 
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
-  qmlRegisterType<MovableUnit>("Unit", 1.0, "MovableUnit");
+  qmlRegisterType<MovableUnit>("Unit", 1, 0, "MovableUnit");
 
 
   MainController main_controller;
@@ -35,10 +40,12 @@ int main(int argc, char** argv) {
                    &main_controller, SLOT(CalibrateCamera()));
   QObject::connect(&main_window, SIGNAL(detect()),
                    &main_controller, SLOT(DetectNewObject()));
+  QObject::connect(&main_window, SIGNAL(NewScreenShot(cv::Mat)),
+                   &main_controller, SLOT(HandleNewScreenshot(cv::Mat)));
 
   main_window.show();
 //  main_controller.CalibrateCamera();
-  camera1.StartCapturing(0);
+  camera1.StartCapturing(1);
   //TODO tchu: signal MainWindow to change into calibrating mode,
   //then use the camera to detect the board
 

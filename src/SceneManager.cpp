@@ -46,3 +46,19 @@ void SceneManager::SetCameraToDisplayHomo(const cv::Mat& new_homo) {
 cv::Mat SceneManager::GetHomo() const{
   return camera_to_display_homography;
 }
+
+void SceneManager::TrackNewMovableUnit(MovableUnit *new_unit) {
+  movable_units.push_back(new_unit);
+}
+
+int SceneManager::TrackingUnitsNumber() {
+  return movable_units.size();
+}
+
+void SceneManager::ClearTracker() {
+  movable_units.clear();
+}
+
+void SceneManager::DrawAllUnits() {
+
+}

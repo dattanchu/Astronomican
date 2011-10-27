@@ -4,10 +4,12 @@
 #include <QMainWindow>
 #include <QDesktopWidget>
 #include <QUrl>
-#include <QtDeclarative/QDeclarativeView>
-#include <QtScript/QScriptEngine>
 #include <cv.h>
 #include <string>
+#include <QObject>
+
+#include <QtDeclarative/QDeclarativeView>
+#include <QtScript/QScriptEngine>
 
 #include "MovableUnit.h"
 
@@ -25,8 +27,11 @@ public slots:
   void UiSizeChanged();
   void Resize();
   void DrawCircle(MovableUnit unit);
+  void TakeScreenshot();
+
 
 signals:
+  void NewScreenShot(const cv::Mat& screen);
   void detect();
   void calibrate();
   void sizeChanged(int new_width, int new_height);

@@ -11,10 +11,9 @@ MainWindow::MainWindow() : QMainWindow()
 
 
   QGraphicsObject *background = ui->rootObject();
+
   connect(background, SIGNAL(sizeChanged(int, int)),
           this, SIGNAL(sizeChanged(int, int)));
-  connect(background, SIGNAL(draw()),
-          this, SLOT(Draw()));
   connect(background, SIGNAL(calibrate()),
           this, SIGNAL(calibrate()));
   connect(background, SIGNAL(sizeChanged(int,int)),
@@ -23,6 +22,8 @@ MainWindow::MainWindow() : QMainWindow()
           this, SLOT(Resize()));
   connect(background, SIGNAL(detect()),
           this, SIGNAL(detect()));
+  connect(background, SIGNAL(screencap()),
+          this, SLOT(TakeScreenshot()));
 
   emit(sizeChanged(
          background->property("width").toInt(),
@@ -90,4 +91,18 @@ void MainWindow::CleanBackGround() {
 //  int tile_size(background->property("tile_size").toInt());
 //  return cv::Size(background_width/tile_size,background_height/tile_size);
 //}
+
+void MainWindow::TakeScreenshot() {
+  qDebug() << "coping screen buffer";
+  QPixmap screenshot = QPixmap::grabWidget(ui);
+  QImage screen_image = screenshot.toImage();
+  screen_image.convertToFormat(QImage::Format_ARGB32);
+//  screen_image.save("preformated_screen","png");
+  cv::Mat screen_matrix(
+        screenshot.height(),
+        screenshot.width(),
+        CV_8UC4,
+        screen_image.bits());
+  emit(NewScreenShot(screen_matrix));
+}
 

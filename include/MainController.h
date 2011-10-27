@@ -5,6 +5,7 @@
 #include <cv.h>
 #include <QSize>
 #include <QPair>
+#include <QPixmap>
 
 class CameraFeed;
 class SceneManager;
@@ -21,7 +22,6 @@ public:
 
 signals:
 
-
 public slots:
   void TileSizeChanged(int new_tile_size);
   void CalibrateCamera();
@@ -29,11 +29,12 @@ public slots:
   void SetSize(int new_width, int new_height);
   void GetReady();
   void HandleNewFrame(const cv::Mat& new_frame);
+  void HandleNewScreenshot(const cv::Mat& new_screenshot);
 
 private:
   CameraFeed* main_camera_;
   SceneManager* scene_;
-
+  QPixmap screenshot;
   bool FLIP_CAMERA_VIEW;
 };
 

@@ -1,11 +1,11 @@
 #include "CameraFeed.h"
 #include "MainController.h"
 #include "SceneManager.h"
-#include "math.h";
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
+#include "MovableUnit.h"
 
 #include <iostream>
 #include <QtCore>
@@ -100,7 +100,7 @@ void MainController::CalibrateCamera() {
     qDebug() << "calibration failed";
   }
 
-  //Step 3: using the camera landmarks coordinate and our scene coordinates
+  //Step 3: Using the camera landmarks coordinate and our scene coordinates
   //find the homography matrix between camera plane and display plane
   if(found)
   {
@@ -112,6 +112,7 @@ void MainController::CalibrateCamera() {
           3.0);
     scene_->SetCameraToDisplayHomo(H);
   }
+
 }
 
 void MainController::TileSizeChanged(int new_tile_size) {
@@ -143,18 +144,20 @@ void MainController::DetectNewObject() {
 
   cv::Canny(gray, edges, 100.0, 30.0, 3);
   cv::imwrite ("edges.png", edges);
-
+  //Step 1: find the circles
   vector<cv::Vec3f> circles;
   cv::HoughCircles(gray,
                    circles,
                    CV_HOUGH_GRADIENT,
                    1,
-                   gray.rows/10,
+                   gray.rows/64,
                    100,
                    30.0,
                    5,
                    50
                    );
+
+  //Step 2: print out the capture image with circles marked
   if(circles.size() > 0)
   {
     qDebug() << "found" << circles.size() << "in the screen";
@@ -173,5 +176,40 @@ void MainController::DetectNewObject() {
   {
     qDebug() << "no circles found";
   }
+
+  //Step 3: apply homogrpahy to transform the coordination from camera view
+  //to computer display view
+  vector<cv::Point2f> points;
+  for( int i = 0; i < circles.size(); i++)
+  {
+    points.push_back(cv::Point2f(circles[i][0], circles[i][1]));
+  }
+  cv::Mat view_plane_points(points);
+  cv::Mat display_plane_points;
+  cv::Mat H = scene_->GetHomo().clone();
+  cv::perspectiveTransform(view_plane_points, display_plane_points, H);
+
+  //Step 4: Make sure the found units are all unique
+  //for now it just clean the scene manager tracking unit vector
+  scene_->ClearTracker();
+
+  //Step 5: Adding the found units into the scene manager
+  for( int i = 0; i < display_plane_points.rows ;i++ ) {
+    MovableUnit *unit =
+        new MovableUnit(
+          QPoint(display_plane_points.at<cv::Point2f>(i).x,
+                 display_plane_points.at<cv::Point2f>(i).y),
+          circles[i][2]);
+    scene_->TrackNewMovableUnit(unit);
+  }
+  qDebug() << "tracking" << scene_->TrackingUnitsNumber();
+
+  //Step 6: call the draw function for found units
+  scene_->DrawAllUnits;
   return;
+}
+
+void MainController::HandleNewScreenshot(const cv::Mat& new_screenshot) {
+  qDebug() << "pint out new screenshot";
+  cv::imwrite("screenshot.png", new_screenshot);
 }
