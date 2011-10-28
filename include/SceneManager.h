@@ -30,6 +30,8 @@ public:
   void SetCameraToDisplayHomo(const cv::Mat& new_homo);
   void DrawAllUnits();
   QSize& GetSize();
+signals:
+  void DrawUnit(MovableUnit unit);
 private:
   std::vector<MovableUnit*> movable_units;
   std::vector<cv::Point2f> window_view_landmarks;

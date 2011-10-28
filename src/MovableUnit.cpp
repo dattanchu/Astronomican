@@ -10,22 +10,22 @@ MovableUnit::MovableUnit(QPoint location, float radius) {
 }
 
 MovableUnit::MovableUnit(const MovableUnit& unit) {
-  location_  = unit.get_location();
-  radius_ = unit.get_radius();
+  location_  = unit.location();
+  radius_ = unit.radius();
 }
 
-void MovableUnit::set_location(const QPoint& new_point) {
+void MovableUnit::setLocation(const QPoint& new_point) {
   location_ = new_point;
 }
 
-QPoint MovableUnit::get_location() const {
+QPoint MovableUnit::location() const {
   return location_;
 }
 
-void MovableUnit::set_radius(const float new_radius) {
+void MovableUnit::setRadius(const float new_radius) {
   radius_ = new_radius;
 }
 
-float MovableUnit::get_radius() const {
+float MovableUnit::radius() const {
   return radius_;
 }

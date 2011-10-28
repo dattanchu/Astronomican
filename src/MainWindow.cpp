@@ -35,8 +35,12 @@ MainWindow::MainWindow() : QMainWindow()
 
 void MainWindow::DrawCircle(MovableUnit unit) {
   QGraphicsObject *background = ui->rootObject();
+  QVariant returnedValue;
   QMetaObject::invokeMethod(background, "createCircle",
-                            Q_ARG(MovableUnit, unit)
+                            Q_RETURN_ARG(QVariant, returnedValue),
+                            Q_ARG(QVariant, unit.location().x()),
+                            Q_ARG(QVariant, unit.location().y()),
+                            Q_ARG(QVariant, unit.radius())
                             );
 }
 
@@ -82,6 +86,7 @@ void MainWindow::ShowTheBoard() {
 
 void MainWindow::CleanBackGround() {
   QGraphicsObject *background = ui->rootObject();
+  QMetaObject::invokeMethod(background, "clearBackground");
 }
 
 //cv::Size MainWindow::getCheckerBoardSize() {

@@ -8,7 +8,7 @@ CameraFeed::CameraFeed() {
 
 void CameraFeed::StartCapturing() {
   if (!device_.isOpened()) {
-    if (!device_.open(1)) {
+    if (!device_.open(0)) {
       throw std::runtime_error("Unable to capture from device id 1");
     }
   }

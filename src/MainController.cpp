@@ -26,6 +26,10 @@ void MainController::AddCameraFeed(CameraFeed *camera_feed) {
   main_camera_ = camera_feed;
 }
 
+void MainController::SetUpMainWindow(MainWindow *window) {
+  main_window_ = window;
+}
+
 void MainController::SetSize(int new_width, int new_height) {
   scene_->SetSize(QSize(new_width,new_height));
 
@@ -45,6 +49,18 @@ void MainController::SetSize(int new_width, int new_height) {
 void MainController::GetReady() {
   connect(main_camera_, SIGNAL(HasNewFrame(cv::Mat)),
           this, SLOT(HandleNewFrame(cv::Mat)));
+  connect(main_window_, SIGNAL(sizeChanged(int, int)),
+                   this, SLOT(SetSize(int, int)));
+  connect(main_window_, SIGNAL(tileSizeChanged(int)),
+                   this, SLOT(TileSizeChanged(int)));
+  connect(main_window_, SIGNAL(calibrate()),
+                   this, SLOT(CalibrateCamera()));
+  connect(main_window_, SIGNAL(detect()),
+                   this, SLOT(DetectNewObject()));
+  connect(main_window_, SIGNAL(NewScreenShot(cv::Mat)),
+                   this, SLOT(HandleNewScreenshot(cv::Mat)));
+  connect(scene_, SIGNAL(DrawUnit(MovableUnit)),
+          main_window_, SLOT(DrawCircle(MovableUnit)));
 }
 
 void MainController::HandleNewFrame(const cv::Mat& new_frame) {
@@ -59,7 +75,7 @@ void MainController::CalibrateCamera() {
   //reserved flag to automatically flip the camera view so the corner are
   //found correctly
   //Step 1: detect the landmark and tell the camera if it is rotated or not
-  FLIP_CAMERA_VIEW = true;
+  FLIP_CAMERA_VIEW = false;
 
   qDebug() << "calibrating";
   vector<cv::Point2f> camera_points;
@@ -121,10 +137,12 @@ void MainController::TileSizeChanged(int new_tile_size) {
   vector<cv::Point2f> checkerboard_inner_corners;
   QSize scene_size = scene_->GetSize();
 
-  for(int i = 0; i < floor(scene_size.width()/new_tile_size)-2; i++)
+  int columns = floor(scene_size.width()/new_tile_size) - 2;
+  int rows = floor(scene_size.height()/new_tile_size) - 2;
 
+  for(int j = 0; j < rows; j++)
   {
-    for(int j = 0; j < floor(scene_size.height()/new_tile_size-2); j++)
+    for(int i = 0; i < columns; i++)
     {
       checkerboard_inner_corners.push_back(cv::Point2f(
                                              (float)(offset + i*new_tile_size),
@@ -136,6 +154,11 @@ void MainController::TileSizeChanged(int new_tile_size) {
 }
 
 void MainController::DetectNewObject() {
+
+  //Step 0: clear the old background
+  main_window_->CleanBackGround();
+
+  //Step 1: find the circles
   cv::Mat img  = main_camera_->Capture(), gray, edges;
 
   cv::cvtColor(img, gray, CV_BGR2GRAY);
@@ -144,7 +167,7 @@ void MainController::DetectNewObject() {
 
   cv::Canny(gray, edges, 100.0, 30.0, 3);
   cv::imwrite ("edges.png", edges);
-  //Step 1: find the circles
+
   vector<cv::Vec3f> circles;
   cv::HoughCircles(gray,
                    circles,
@@ -204,8 +227,8 @@ void MainController::DetectNewObject() {
   }
   qDebug() << "tracking" << scene_->TrackingUnitsNumber();
 
-  //Step 6: call the draw function for found units
-  scene_->DrawAllUnits;
+  //Step 7: call the draw function for found units
+  scene_->DrawAllUnits();
   return;
 }
 

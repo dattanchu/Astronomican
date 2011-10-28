@@ -3,5 +3,6 @@
         <file>ui/MainWindow.qml</file>
         <file>ui/Checkerboard.qml</file>
         <file>ui/core.js</file>
+        <file>ui/circle.qml</file>
     </qresource>
 </RCC>

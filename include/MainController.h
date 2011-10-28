@@ -7,6 +7,7 @@
 #include <QPair>
 #include <QPixmap>
 
+#include <MainWindow.h>
 class CameraFeed;
 class SceneManager;
 /**
@@ -18,7 +19,7 @@ public:
   MainController();
   ~MainController();
   void AddCameraFeed(CameraFeed* camera_feed);
-
+  void SetUpMainWindow(MainWindow *window);
 
 signals:
 
@@ -34,6 +35,7 @@ public slots:
 private:
   CameraFeed* main_camera_;
   SceneManager* scene_;
+  MainWindow* main_window_;
   QPixmap screenshot;
   bool FLIP_CAMERA_VIEW;
 };

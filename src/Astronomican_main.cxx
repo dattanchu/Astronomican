@@ -23,29 +23,19 @@ int main(int argc, char** argv) {
   MainController main_controller;
   CameraFeed camera1;
   main_controller.AddCameraFeed(&camera1);
-  main_controller.GetReady();
-
 
   MainWindow main_window;
+  main_controller.SetUpMainWindow(&main_window);
+
+  main_controller.GetReady();
 //  view.rootContext()->setContextProperty("camera_feed", &camera1);
 //  view.rootContext()->setContextProperty("main_controller", &main_controller);
   main_window.setGeometry(0, 0, 800, 600);
 //  view.showFullScreen()
 
-  QObject::connect(&main_window, SIGNAL(sizeChanged(int, int)),
-                   &main_controller, SLOT(SetSize(int, int)));
-  QObject::connect(&main_window, SIGNAL(tileSizeChanged(int)),
-                   &main_controller, SLOT(TileSizeChanged(int)));
-  QObject::connect(&main_window, SIGNAL(calibrate()),
-                   &main_controller, SLOT(CalibrateCamera()));
-  QObject::connect(&main_window, SIGNAL(detect()),
-                   &main_controller, SLOT(DetectNewObject()));
-  QObject::connect(&main_window, SIGNAL(NewScreenShot(cv::Mat)),
-                   &main_controller, SLOT(HandleNewScreenshot(cv::Mat)));
-
   main_window.show();
 //  main_controller.CalibrateCamera();
-  camera1.StartCapturing(1);
+  camera1.StartCapturing(0);
   //TODO tchu: signal MainWindow to change into calibrating mode,
   //then use the camera to detect the board
 

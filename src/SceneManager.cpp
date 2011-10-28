@@ -36,7 +36,7 @@ std::vector<cv::Point2f> SceneManager::GetCameraViewLandmarks() const{
 }
 
 void SceneManager::SetCameraViewLandmarks(const std::vector<cv::Point2f>& new_landmarks) {
-    window_view_landmarks = new_landmarks;
+    camera_view_landmarks = new_landmarks;
 }
 
 void SceneManager::SetCameraToDisplayHomo(const cv::Mat& new_homo) {
@@ -60,5 +60,7 @@ void SceneManager::ClearTracker() {
 }
 
 void SceneManager::DrawAllUnits() {
-
+  for ( int i = 0; i < movable_units.size(); i++ )  {
+    emit (DrawUnit(*movable_units[i]));
+  }
 }
