@@ -5,6 +5,7 @@
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
+#include "opencv2/video/tracking.hpp"
 #include "MovableUnit.h"
 
 #include <iostream>
@@ -50,15 +51,15 @@ void MainController::GetReady() {
   connect(main_camera_, SIGNAL(HasNewFrame(cv::Mat)),
           this, SLOT(HandleNewFrame(cv::Mat)));
   connect(main_window_, SIGNAL(sizeChanged(int, int)),
-                   this, SLOT(SetSize(int, int)));
+          this, SLOT(SetSize(int, int)));
   connect(main_window_, SIGNAL(tileSizeChanged(int)),
-                   this, SLOT(TileSizeChanged(int)));
+          this, SLOT(TileSizeChanged(int)));
   connect(main_window_, SIGNAL(calibrate()),
-                   this, SLOT(CalibrateCamera()));
+          this, SLOT(CalibrateCamera()));
   connect(main_window_, SIGNAL(detect()),
-                   this, SLOT(DetectNewObject()));
+          this, SLOT(DetectNewObject()));
   connect(main_window_, SIGNAL(NewScreenShot(cv::Mat)),
-                   this, SLOT(HandleNewScreenshot(cv::Mat)));
+          this, SLOT(HandleNewScreenshot(cv::Mat)));
   connect(scene_, SIGNAL(DrawUnit(MovableUnit)),
           main_window_, SLOT(DrawCircle(MovableUnit)));
 }
@@ -78,12 +79,13 @@ void MainController::CalibrateCamera() {
   FLIP_CAMERA_VIEW = false;
 
   qDebug() << "calibrating";
-  vector<cv::Point2f> camera_points;
+  vector<cv::Point2f> corners;
 
-  cv::Mat view = main_camera_->Capture(), viewgray;
+  cv::Mat view = main_camera_->Capture();
+  cv::Mat viewgray;
 
   if(FLIP_CAMERA_VIEW)
-    cv::flip(view, view, -1);
+  cv::flip(view, view, -1);
   cv::imwrite("view.png",view);
 
   //Step 2: detect the checkerboard and return the land marks coordinate in
@@ -93,22 +95,23 @@ void MainController::CalibrateCamera() {
 
   //board size is 2 tile smaller than the total (screen_size)/(tile_size)
   //instead of 1 because of the margins
-  cv::Size board_size(floor(scene_size.width()/tile_size-2),
-                      floor(scene_size.height()/tile_size)-2);
+  int board_w = floor(scene_size.width()/tile_size)-2;
+  int board_h = floor(scene_size.height()/tile_size)-2;
+  cv::Size board_size(board_w, board_h);
 
   cv::cvtColor(view,viewgray,CV_BGR2GRAY);
   cv::imwrite("viewgray.png", viewgray);
 
-  bool found = cv::findChessboardCorners(view, board_size, camera_points,
+  bool found = cv::findChessboardCorners(view, board_size, corners,
                                          CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
 
   if(found)
   {
-    cv::cornerSubPix(viewgray, camera_points, cv::Size(11, 11),
+    cv::cornerSubPix(viewgray, corners, cv::Size(11, 11),
                      cv::Size(-1,-1), cv::TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
-    cv::drawChessboardCorners( view, board_size, camera_points, found);
+    cv::drawChessboardCorners( view, board_size, corners, found);
     cv::imwrite("calibration_result.png", view);
-    scene_->SetCameraViewLandmarks(camera_points);
+    scene_->SetCameraViewLandmarks(corners);
     qDebug() << "finished calibration";
   }
   else
@@ -122,12 +125,26 @@ void MainController::CalibrateCamera() {
   {
     vector<cv::Point2f> display_points = scene_->GetWindowViewLandmarks();
     cv::Mat H = cv::findHomography(
-          cv::Mat(camera_points),
+          cv::Mat(corners),
           cv::Mat(display_points),
           CV_RANSAC,
           3.0);
     scene_->SetCameraToDisplayHomo(H);
   }
+  //Step 4: display saturated color screen to detect the view area
+  main_window_->ClearColorBuffer(QColor(0, 255, 0));
+  cv::Mat screen1 = main_camera_->Capture();
+  cv::imwrite("green_screen.png", screen1);
+
+  main_window_->ClearColorBuffer(QColor(144, 238, 144));
+  cv::Mat screen3 = main_camera_->Capture();
+  cv::imwrite("light_screen.png", screen3);
+
+
+  main_window_->ClearColorBuffer(QColor(255,255,255));
+  cv::Mat screen2 = main_camera_->Capture();
+  cv::imwrite("white_screen.png", screen2);
+
 
 }
 
@@ -155,8 +172,7 @@ void MainController::TileSizeChanged(int new_tile_size) {
 
 void MainController::DetectNewObject() {
 
-  //Step 0: clear the old background
-  main_window_->CleanBackGround();
+  //Step 0:background substraction
 
   //Step 1: find the circles
   cv::Mat img  = main_camera_->Capture(), gray, edges;
@@ -235,4 +251,18 @@ void MainController::DetectNewObject() {
 void MainController::HandleNewScreenshot(const cv::Mat& new_screenshot) {
   qDebug() << "pint out new screenshot";
   cv::imwrite("screenshot.png", new_screenshot);
+}
+
+cv::Mat MainController::BackgroundSubstraction() {
+  //Step 1: detect the screen area and clear out the area outside
+//  cv::Mat screenshot = main_camera_->Capture();
+//  cv::Mat cropped_screenshot = cv::Mat(screenshot, cv::Rect());
+//  //Step 2: using homography matrix calculate the projected background
+//  cv::Mat background = main_window_->TakeScreenshot();
+//  cv::Mat projected_background;
+//  cv::Mat H = scene_->GetHomo();
+//  cv::perspectiveTransform(background, projected_background, H);
+//  //Step 3: using matrix substraction to found the different pixels
+//  cv::Mat foreground;
+  //Step 4: return the processed picture
 }

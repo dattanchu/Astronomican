@@ -31,8 +31,18 @@ Rectangle {
   function createCircle(x, y, radius) {
     Logic.drawMovableUnit(x, y, radius)
   }
-  function clearBackground() {
+  function clearDrawObject() {
     Logic.clearDrawObject();
+  }
+  function clearColorBuffer(color) {
+    background.color = color;
+  }
+  function deleteCheckerBoard() {
+    Logic.deleteCheckerBoard();
+  }
+
+  function createCheckerBoard() {
+    Logic.createCheckerBoard();
   }
 
   //    function createCheckerBoard() {
@@ -60,7 +70,7 @@ Rectangle {
 
     Text {
       anchors.centerIn: parent
-      text: "camera"
+      text: "calibrate"
     }
 
     MouseArea {
@@ -144,6 +154,7 @@ Rectangle {
     MouseArea {
       anchors.fill: parent
       onClicked: {
+//        Logic.clearDrawObject();
         background.detect();
       }
     }
@@ -169,6 +180,7 @@ Rectangle {
     MouseArea {
       anchors.fill: parent
       onClicked: {
+        Logic.clearDrawObject();
         background.screencap();
       }
     }

@@ -81,12 +81,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::ShowTheBoard() {
   QGraphicsObject *background = ui->rootObject();
-  background->setProperty("showing_board",true);
+  QMetaObject::invokeMethod(background, "createCheckerBoard");
 }
 
 void MainWindow::CleanBackGround() {
   QGraphicsObject *background = ui->rootObject();
-  QMetaObject::invokeMethod(background, "clearBackground");
+  QMetaObject::invokeMethod(background, "clearDrawObject");
 }
 
 //cv::Size MainWindow::getCheckerBoardSize() {
@@ -97,7 +97,7 @@ void MainWindow::CleanBackGround() {
 //  return cv::Size(background_width/tile_size,background_height/tile_size);
 //}
 
-void MainWindow::TakeScreenshot() {
+cv::Mat MainWindow::TakeScreenshot() {
   qDebug() << "coping screen buffer";
   QPixmap screenshot = QPixmap::grabWidget(ui);
   QImage screen_image = screenshot.toImage();
@@ -111,3 +111,10 @@ void MainWindow::TakeScreenshot() {
   emit(NewScreenShot(screen_matrix));
 }
 
+void MainWindow::ClearColorBuffer(QColor color) {
+  QGraphicsObject *background = ui->rootObject();
+  QMetaObject::invokeMethod(background, "clearDrawObject");
+  QMetaObject::invokeMethod(background, "deleteCheckerBoard");
+  QMetaObject::invokeMethod(background, "clearColorBuffer",
+                            Q_ARG(QVariant, color));
+}

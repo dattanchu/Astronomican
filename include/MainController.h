@@ -33,6 +33,7 @@ public slots:
   void HandleNewScreenshot(const cv::Mat& new_screenshot);
 
 private:
+  cv::Mat BackgroundSubstraction();
   CameraFeed* main_camera_;
   SceneManager* scene_;
   MainWindow* main_window_;

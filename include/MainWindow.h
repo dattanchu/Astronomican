@@ -27,8 +27,8 @@ public slots:
   void UiSizeChanged();
   void Resize();
   void DrawCircle(MovableUnit unit);
-  void TakeScreenshot();
-
+  cv::Mat TakeScreenshot();
+  void ClearColorBuffer(QColor color);
 
 signals:
   void NewScreenShot(const cv::Mat& screen);
