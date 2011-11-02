@@ -29,3 +29,14 @@ void MovableUnit::setRadius(const float new_radius) {
 float MovableUnit::radius() const {
   return radius_;
 }
+
+QRect MovableUnit::boudingRect() const {
+  return QRectF(-radius_/2, -radius_/2,
+                radius_/2, radius_/2);
+}
+
+void MovableUnit::paint(QPainter *painter,
+           const QStyleOptionGraphicsItem *option,
+           QWidget *widget) {
+  painter->drawEllipse(QPoint(0,0), radius_, radius_);
+}

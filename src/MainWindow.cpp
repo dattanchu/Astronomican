@@ -16,7 +16,7 @@ MainWindow::MainWindow() : QMainWindow()
   qml_page->setSource(QUrl("qrc:///ui/Checkerboard.qml"));
   qml_page->setResizeMode(QDeclarativeView::SizeRootObjectToView);
 
-  this->game_page = new SceneWidget;
+  this->game_page = new ViewManager;
 
 
   QGraphicsObject *background = qml_page->rootObject();
@@ -52,7 +52,7 @@ MainWindow::MainWindow() : QMainWindow()
   ui.stackedWidget->setCurrentWidget(qml_page);
 }
 
-void MainWindow::DrawCircle(MovableUnit unit) {
+//void MainWindow::DrawCircle(MovableUnit unit) {
 //  QGraphicsObject *background = qml_page->rootObject();
 //  QVariant returnedValue;
 //  QMetaObject::invokeMethod(background, "createCircle",
@@ -61,14 +61,7 @@ void MainWindow::DrawCircle(MovableUnit unit) {
 //                            Q_ARG(QVariant, unit.location().y()),
 //                            Q_ARG(QVariant, unit.radius())
 //                            );
-}
-
-void MainWindow::Resize() {
-  if(!isMaximized())
-    showFullScreen();
-  else
-    showNormal();
-}
+//}
 
 void MainWindow::UiSizeChanged() {
   QGraphicsObject *background = qml_page->rootObject();
@@ -98,15 +91,15 @@ MainWindow::~MainWindow()
   delete this->qml_page;
 }
 
-void MainWindow::ShowTheBoard() {
-  QGraphicsObject *background = qml_page->rootObject();
-  QMetaObject::invokeMethod(background, "createCheckerBoard");
-}
+//void MainWindow::ShowTheBoard() {
+//  QGraphicsObject *background = qml_page->rootObject();
+//  QMetaObject::invokeMethod(background, "createCheckerBoard");
+//}
 
-void MainWindow::CleanBackGround() {
-  QGraphicsObject *background = qml_page->rootObject();
-  QMetaObject::invokeMethod(background, "clearDrawObject");
-}
+//void MainWindow::CleanBackGround() {
+//  QGraphicsObject *background = qml_page->rootObject();
+//  QMetaObject::invokeMethod(background, "clearDrawObject");
+//}
 
 //cv::Size MainWindow::getCheckerBoardSize() {
 //  QGraphicsObject *background = ui->rootObject();
@@ -133,9 +126,9 @@ cv::Mat MainWindow::TakeScreenshot() {
 
 }
 
-void MainWindow::ClearColorBuffer(QColor color) {
+//void MainWindow::ClearColorBuffer(QColor color) {
 
-}
+//}
 
 void MainWindow::Toggle() {
   if (ui.stackedWidget->currentIndex() == ui.stackedWidget->indexOf(qml_page))

@@ -2,6 +2,8 @@
 #define MOVABLE_UNIT_H_
 #include <QObject>
 #include <QPoint>
+#include <QGraphicsItem>
+#include <QPainter>
 
 #include "MovableUnit.h"
 
@@ -10,7 +12,7 @@
    a bigger base. As long as it is on a base that we can recognize. It is a
    MovableUnit
 */
-class MovableUnit : public QObject {
+class MovableUnit : public QGraphicsItem {
   Q_OBJECT
   Q_PROPERTY(QPoint location READ location WRITE setLocation)
   Q_PROPERTY(float radius READ radius WRITE setRadius)
@@ -22,6 +24,11 @@ public:
   QPoint location() const;
   void setRadius(const float new_radius);
   float radius() const;
+  QRect boudingRect() const;
+  void paint(QPainter *painter,
+             const QStyleOptionGraphicsItem *option,
+             QWidget *widget);
+
 private:
   // (0,0) is at the top left and x horizontal pointing left, y is vertical
   // pointing down (similar to the indexing of matrices)

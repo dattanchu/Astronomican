@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QtGui/QGraphicsView>
 
-class SceneWidget : public QGraphicsView
+class ViewManager : public QGraphicsView
 {
   Q_OBJECT
 public:

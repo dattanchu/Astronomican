@@ -27,7 +27,9 @@ std::vector<cv::Point2f> SceneManager::GetWindowViewLandmarks() const{
     return window_view_landmarks;
 }
 
-void SceneManager::SetWindowViewLandmarks(const std::vector<cv::Point2f>& new_landmarks) {
+void SceneManager::SetWindowViewLandmarks(
+    const std::vector<cv::Point2f>& new_landmarks)
+{
     window_view_landmarks = new_landmarks;
 }
 
@@ -35,7 +37,9 @@ std::vector<cv::Point2f> SceneManager::GetCameraViewLandmarks() const{
     return camera_view_landmarks;
 }
 
-void SceneManager::SetCameraViewLandmarks(const std::vector<cv::Point2f>& new_landmarks) {
+void SceneManager::SetCameraViewLandmarks(
+    const std::vector<cv::Point2f>& new_landmarks)
+{
     camera_view_landmarks = new_landmarks;
 }
 
@@ -47,17 +51,17 @@ cv::Mat SceneManager::GetHomo() const{
   return camera_to_display_homography;
 }
 
-void SceneManager::TrackNewMovableUnit(MovableUnit *new_unit) {
-  movable_units.push_back(new_unit);
-}
+//void SceneManager::TrackNewMovableUnit(MovableUnit *new_unit) {
+//  movable_units.push_back(new_unit);
+//}
 
-int SceneManager::TrackingUnitsNumber() {
-  return movable_units.size();
-}
+//int SceneManager::TrackingUnitsNumber() {
+//  return movable_units.size();
+//}
 
-void SceneManager::ClearTracker() {
-  movable_units.clear();
-}
+//void SceneManager::ClearTracker() {
+//  movable_units.clear();
+//}
 
 void SceneManager::DrawAllUnits() {
   for ( int i = 0; i < movable_units.size(); i++ )  {

@@ -2,7 +2,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <cmath>
-#include "SceneWidget.h"
+#include "ViewManager.h"
 
 //SceneWidget::SceneWidget() : QGLWidget() {
 //}

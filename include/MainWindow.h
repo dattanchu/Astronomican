@@ -13,7 +13,7 @@
 #include <QtScript/QScriptEngine>
 
 #include "MovableUnit.h"
-#include "SceneWidget.h"
+#include "ViewManager.h"
 #include "ui_MainWindow.h"
 
 class MainWindow : public QMainWindow
@@ -26,12 +26,11 @@ public:
   cv::Mat TakeScreenshot();
 public slots:
 //  void SetTileSize(int new_size);
-  void ShowTheBoard();
-  void CleanBackGround();
+//  void ShowTheBoard();
+//  void CleanBackGround();
   void UiSizeChanged();
-  void Resize();
-  void DrawCircle(MovableUnit unit);
-  void ClearColorBuffer(QColor color);
+//  void DrawCircle(MovableUnit unit);
+//  void ClearColorBuffer(QColor color);
   void Toggle();
 
 signals:
@@ -44,7 +43,7 @@ signals:
 private:
   QDeclarativeView *qml_page;
   Ui::MainWindow ui;
-  SceneWidget *game_page;
+  ViewManager *game_page;
 };
 
 

@@ -8,6 +8,7 @@
 #include "opencv2/video/tracking.hpp"
 #include "MovableUnit.h"
 
+#include <QtAlgorithms>
 #include <iostream>
 #include <QtCore>
 #include <vector>
@@ -49,8 +50,8 @@ void MainController::GetReady() {
           this, SLOT(DetectNewObject()));
 //  connect(main_window_, SIGNAL(NewScreenShot(cv::Mat*)),
 //          this, SLOT(HandleNewScreenshot(cv::Mat*)));
-  connect(scene_, SIGNAL(DrawUnit(MovableUnit)),
-          main_window_, SLOT(DrawCircle(MovableUnit)));
+//  connect(scene_, SIGNAL(DrawUnit(MovableUnit)),
+//          main_window_, SLOT(DrawCircle(MovableUnit)));
 }
 
 void MainController::HandleNewFrame(const cv::Mat& new_frame) {
@@ -245,7 +246,9 @@ void MainController::DetectNewObject() {
 
   //Step 4: Make sure the found units are all unique
   //for now it just clean the scene manager tracking unit vector
-  scene_->ClearTracker();
+
+//  scene_->ClearTracker();
+  qDeleteAll( scene_->items() );
 
   //Step 5: Adding the found units into the scene manager
   for( int i = 0; i < display_plane_points.rows ;i++ ) {
@@ -254,9 +257,11 @@ void MainController::DetectNewObject() {
           QPoint(display_plane_points.at<cv::Point2f>(i).x,
                  display_plane_points.at<cv::Point2f>(i).y),
           circles[i][2]);
-    scene_->TrackNewMovableUnit(unit);
+
+//    scene_->TrackNewMovableUnit(unit);
+    scene_->addItem(unit);
   }
-  qDebug() << "tracking" << scene_->TrackingUnitsNumber();
+  qDebug() << "tracking" << scene_->items().count();
 
   //Step 7: call the draw function for found units
   scene_->DrawAllUnits();
