@@ -3,7 +3,7 @@
 
 SceneManager::SceneManager(){
   size_ = QSize(800, 600);
-  tile_size_ = 100;
+  tile_size_ = 170;
 }
 
 void SceneManager::SetSize(const QSize &new_size) {

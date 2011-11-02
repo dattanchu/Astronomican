@@ -12,11 +12,15 @@ file(GLOB HDRS include/*.h)
 file(GLOB SRCS src/*.cpp)
 file(GLOB TEST_SRCS test/*.cpp)
 file(GLOB UI_SRCS ui/*)
+file(GLOB UI_FILE ui/*.ui)
+qt4_wrap_ui(MOCUI ${UI_FILE})
 qt4_wrap_cpp(MOCSRC ${HDRS})
 qt4_add_resources(QRC Astronomican.qrc)
 include_directories(
     ${OpenCV_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_BINARY_DIR}
 )
-add_executable(Astronomican ${SRCS} ${HDRS} ${MOCSRC} ${UI_SRCS} ${QRC} src/Astronomican_main.cxx)
+add_executable(Astronomican ${SRCS} ${HDRS} ${MOCSRC} ${UI_SRCS} ${QRC} ${MOCUI}
+ src/Astronomican_main.cxx)
 target_link_libraries(Astronomican ${QT_LIBRARIES} ${OpenCV_LIBS})

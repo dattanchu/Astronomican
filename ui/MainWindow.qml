@@ -45,47 +45,33 @@ Rectangle {
     Logic.createCheckerBoard();
   }
 
-  //    function createCheckerBoard() {
-  //        var component = Qt.createComponent("Checkerboard.qml");
-  //        var checker_board = component.createObject(background);
-  //        if(checker_board != null) {
-  //          checker_board.id = 'checker_board'
-  //          checker_board.tile_size = background.tile_size;
-  //        }
-  //        background.board_alive = true;
-  //    }
 
-  //    Checkerboard {
-  //      id: checker_board;
-  //      tile_size: background.tile_size;
-  //    }
+//  Rectangle {
+//    id: calibration
 
-  Rectangle {
-    id: calibration
+//    width: 100; height: 40
+//    anchors.right: parent.right; anchors.rightMargin: 20
+//    anchors.bottom: parent.bottom; anchors.bottomMargin: 20
+//    radius: 6
 
-    width: 100; height: 40
-    anchors.right: parent.right; anchors.rightMargin: 20
-    anchors.bottom: parent.bottom; anchors.bottomMargin: 20
-    radius: 6
+//    Text {
+//      anchors.centerIn: parent
+//      text: "calibrate"
+//    }
 
-    Text {
-      anchors.centerIn: parent
-      text: "calibrate"
-    }
-
-    MouseArea {
-      anchors.fill: parent
-      onClicked: {
-        background.calibrate();
-      }
-    }
-  }
+//    MouseArea {
+//      anchors.fill: parent
+//      onClicked: {
+//        background.calibrate();
+//      }
+//    }
+//  }
 
   Rectangle {
     id: resize
 
     width: 100; height: 40
-    anchors.right: calibration.left; anchors.rightMargin: 20
+    anchors.right: parent.right; anchors.rightMargin: 20
     anchors.bottom: parent.bottom; anchors.bottomMargin: 20
     radius: 6
 
@@ -135,56 +121,56 @@ Rectangle {
     }
 
   }
-  Rectangle {
-    id: detect
+//  Rectangle {
+//    id: detect
 
-    property bool pressed: false
+//    property bool pressed: false
 
-    width: 100; height: 40
-    anchors.right: board_button.left; anchors.rightMargin: 20
-    anchors.bottom: parent.bottom; anchors.bottomMargin: 20
-    radius: 6
-    color: pressed ? "gray" : "white"
+//    width: 100; height: 40
+//    anchors.right: board_button.left; anchors.rightMargin: 20
+//    anchors.bottom: parent.bottom; anchors.bottomMargin: 20
+//    radius: 6
+//    color: pressed ? "gray" : "white"
 
-    Text {
-      anchors.centerIn: parent
-      text: "detect"
-    }
+//    Text {
+//      anchors.centerIn: parent
+//      text: "detect"
+//    }
 
-    MouseArea {
-      anchors.fill: parent
-      onClicked: {
+//    MouseArea {
+//      anchors.fill: parent
+//      onClicked: {
+////        Logic.clearDrawObject();
+//        background.detect();
+//      }
+//    }
+
+//  }
+
+//  Rectangle {
+//    id: capture_screen
+
+//    property bool pressed: false
+
+//    width: 100; height: 40
+//    anchors.right: detect.left; anchors.rightMargin: 20
+//    anchors.bottom: parent.bottom; anchors.bottomMargin: 20
+//    radius: 6
+//    color: pressed ? "gray" : "white"
+
+//    Text {
+//      anchors.centerIn: parent
+//      text: "screencap"
+//    }
+
+//    MouseArea {
+//      anchors.fill: parent
+//      onClicked: {
 //        Logic.clearDrawObject();
-        background.detect();
-      }
-    }
-
-  }
-
-  Rectangle {
-    id: capture_screen
-
-    property bool pressed: false
-
-    width: 100; height: 40
-    anchors.right: detect.left; anchors.rightMargin: 20
-    anchors.bottom: parent.bottom; anchors.bottomMargin: 20
-    radius: 6
-    color: pressed ? "gray" : "white"
-
-    Text {
-      anchors.centerIn: parent
-      text: "screencap"
-    }
-
-    MouseArea {
-      anchors.fill: parent
-      onClicked: {
-        Logic.clearDrawObject();
-        background.screencap();
-      }
-    }
-
-  }
+//        background.screencap();
+//      }
+//    }
 
 }
+
+//}

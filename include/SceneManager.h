@@ -4,6 +4,7 @@
 #include <vector>
 #include <QSize>
 #include <cv.h>
+#include <QGraphicsScene>
 
 #include "MovableUnit.h"
 
@@ -11,7 +12,7 @@
    Manage in memory the location of the different objects and other properties
    of the scene (e.g. scene geometry in real space, homography conversion)
 */
-class SceneManager : public QObject {
+class SceneManager : public QGraphicsScene {
   Q_OBJECT
 public:
   SceneManager();

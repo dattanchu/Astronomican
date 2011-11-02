@@ -7,11 +7,14 @@
 #include <cv.h>
 #include <string>
 #include <QObject>
+#include <QStackedWidget>
 
 #include <QtDeclarative/QDeclarativeView>
 #include <QtScript/QScriptEngine>
 
 #include "MovableUnit.h"
+#include "SceneWidget.h"
+#include "ui_MainWindow.h"
 
 class MainWindow : public QMainWindow
 {
@@ -20,6 +23,7 @@ class MainWindow : public QMainWindow
 public:
   MainWindow();
   ~MainWindow();
+  cv::Mat TakeScreenshot();
 public slots:
 //  void SetTileSize(int new_size);
   void ShowTheBoard();
@@ -27,18 +31,20 @@ public slots:
   void UiSizeChanged();
   void Resize();
   void DrawCircle(MovableUnit unit);
-  cv::Mat TakeScreenshot();
   void ClearColorBuffer(QColor color);
+  void Toggle();
 
 signals:
-  void NewScreenShot(const cv::Mat& screen);
+  void NewScreenShot(cv::Mat* screen);
   void detect();
   void calibrate();
   void sizeChanged(int new_width, int new_height);
   void tileSizeChanged(int new_size);
 
 private:
-  QDeclarativeView *ui;
+  QDeclarativeView *qml_page;
+  Ui::MainWindow ui;
+  SceneWidget *game_page;
 };
 
 

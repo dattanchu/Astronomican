@@ -1,47 +1,66 @@
 #include <QGraphicsObject>
 #include <QtCore>
 #include "MainWindow.h"
+#include "ui_MainWindow.h"
+
+#include "opencv2/core/core.hpp"
+#include "opencv2/features2d/features2d.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/calib3d/calib3d.hpp"
+#include "opencv2/video/tracking.hpp"
 
 MainWindow::MainWindow() : QMainWindow()
 {
+  ui.setupUi(this);
+  qml_page = new QDeclarativeView;
+  qml_page->setSource(QUrl("qrc:///ui/Checkerboard.qml"));
+  qml_page->setResizeMode(QDeclarativeView::SizeRootObjectToView);
 
-  this->ui = new QDeclarativeView;
-  this->ui->setSource(QUrl("qrc:///ui/MainWindow.qml"));
-  this->ui->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+  this->game_page = new SceneWidget;
 
 
-  QGraphicsObject *background = ui->rootObject();
+  QGraphicsObject *background = qml_page->rootObject();
 
-  connect(background, SIGNAL(sizeChanged(int, int)),
-          this, SIGNAL(sizeChanged(int, int)));
-  connect(background, SIGNAL(calibrate()),
+//  connect(background, SIGNAL(sizeChanged(int, int)),
+//          this, SIGNAL(sizeChanged(int, int)));
+//  connect(background, SIGNAL(calibrate()),
+//          this, SIGNAL(calibrate()));
+//  connect(background, SIGNAL(sizeChanged(int,int)),
+//          this, SLOT(UiSizeChanged()));
+//  connect(background, SIGNAL(resize()),
+//          this, SLOT(Resize()));
+//  connect(background, SIGNAL(detect()),
+//          this, SIGNAL(detect()));
+//  connect(background, SIGNAL(screencap()),
+//          this, SLOT(TakeScreenshot()));
+  connect(ui.Detect, SIGNAL(clicked()),
+          this, SIGNAL(detect()));
+  connect(ui.Calibration, SIGNAL(clicked()),
           this, SIGNAL(calibrate()));
+  connect(ui.Toggle, SIGNAL(clicked()),
+          this, SLOT(Toggle()));
+  connect(background, SIGNAL(sizeChanged(int,int)),
+          this, SIGNAL(sizeChanged(int,int)));
   connect(background, SIGNAL(sizeChanged(int,int)),
           this, SLOT(UiSizeChanged()));
-  connect(background, SIGNAL(resize()),
-          this, SLOT(Resize()));
-  connect(background, SIGNAL(detect()),
-          this, SIGNAL(detect()));
-  connect(background, SIGNAL(screencap()),
-          this, SLOT(TakeScreenshot()));
 
-  emit(sizeChanged(
-         background->property("width").toInt(),
-         background->property("height").toInt()
-         ));
+  emit ( sizeChanged( this->width()/170, this->height()/170));
 
-  setCentralWidget(this->ui);
+//  setCentralWidget(this->qml_page);
+  ui.stackedWidget->addWidget(qml_page);
+  ui.stackedWidget->addWidget(game_page);
+  ui.stackedWidget->setCurrentWidget(qml_page);
 }
 
 void MainWindow::DrawCircle(MovableUnit unit) {
-  QGraphicsObject *background = ui->rootObject();
-  QVariant returnedValue;
-  QMetaObject::invokeMethod(background, "createCircle",
-                            Q_RETURN_ARG(QVariant, returnedValue),
-                            Q_ARG(QVariant, unit.location().x()),
-                            Q_ARG(QVariant, unit.location().y()),
-                            Q_ARG(QVariant, unit.radius())
-                            );
+//  QGraphicsObject *background = qml_page->rootObject();
+//  QVariant returnedValue;
+//  QMetaObject::invokeMethod(background, "createCircle",
+//                            Q_RETURN_ARG(QVariant, returnedValue),
+//                            Q_ARG(QVariant, unit.location().x()),
+//                            Q_ARG(QVariant, unit.location().y()),
+//                            Q_ARG(QVariant, unit.radius())
+//                            );
 }
 
 void MainWindow::Resize() {
@@ -52,7 +71,7 @@ void MainWindow::Resize() {
 }
 
 void MainWindow::UiSizeChanged() {
-  QGraphicsObject *background = ui->rootObject();
+  QGraphicsObject *background = qml_page->rootObject();
   int a(background->property("width").toInt()),
       b(background->property("height").toInt());
 
@@ -76,16 +95,16 @@ void MainWindow::UiSizeChanged() {
 
 MainWindow::~MainWindow()
 {
-  delete this->ui;
+  delete this->qml_page;
 }
 
 void MainWindow::ShowTheBoard() {
-  QGraphicsObject *background = ui->rootObject();
+  QGraphicsObject *background = qml_page->rootObject();
   QMetaObject::invokeMethod(background, "createCheckerBoard");
 }
 
 void MainWindow::CleanBackGround() {
-  QGraphicsObject *background = ui->rootObject();
+  QGraphicsObject *background = qml_page->rootObject();
   QMetaObject::invokeMethod(background, "clearDrawObject");
 }
 
@@ -98,23 +117,33 @@ void MainWindow::CleanBackGround() {
 //}
 
 cv::Mat MainWindow::TakeScreenshot() {
-  qDebug() << "coping screen buffer";
-  QPixmap screenshot = QPixmap::grabWidget(ui);
+//  qDebug() << "coping screen buffer";
+  QPixmap screenshot = QPixmap::grabWidget(ui.stackedWidget->currentWidget());
   QImage screen_image = screenshot.toImage();
   screen_image.convertToFormat(QImage::Format_ARGB32);
 //  screen_image.save("preformated_screen","png");
-  cv::Mat screen_matrix(
+  cv::Mat screenshot_ = cv::Mat(
         screenshot.height(),
         screenshot.width(),
         CV_8UC4,
-        screen_image.bits());
-  emit(NewScreenShot(screen_matrix));
+        screen_image.bits()).clone();
+//  cv::imwrite("test.png",*screen_matrix);
+//  emit(NewScreenShot(screen_matrix));
+  return screenshot_;
+
 }
 
 void MainWindow::ClearColorBuffer(QColor color) {
-  QGraphicsObject *background = ui->rootObject();
-  QMetaObject::invokeMethod(background, "clearDrawObject");
-  QMetaObject::invokeMethod(background, "deleteCheckerBoard");
-  QMetaObject::invokeMethod(background, "clearColorBuffer",
-                            Q_ARG(QVariant, color));
+
+}
+
+void MainWindow::Toggle() {
+  if (ui.stackedWidget->currentIndex() == ui.stackedWidget->indexOf(qml_page))
+  {
+    ui.stackedWidget->setCurrentWidget(game_page);
+  }
+  else
+  {
+    ui.stackedWidget->setCurrentWidget(qml_page);
+  }
 }

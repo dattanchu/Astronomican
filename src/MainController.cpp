@@ -33,17 +33,6 @@ void MainController::SetUpMainWindow(MainWindow *window) {
 
 void MainController::SetSize(int new_width, int new_height) {
   scene_->SetSize(QSize(new_width,new_height));
-
-  //  int a(new_width), b(new_height);
-  //  while (b != 0)
-  //  {
-  //    int t = b;
-  //    b = a % b;
-  //    a = t;
-  //  }
-  //  int new_tile_size = (a > 100)? a : 100;
-  //  scene_->SetTileSize(new_tile_size);
-  //  emit TileSizeChanged(new_tile_size);
 }
 
 // Does the connection of slots and signals
@@ -58,8 +47,8 @@ void MainController::GetReady() {
           this, SLOT(CalibrateCamera()));
   connect(main_window_, SIGNAL(detect()),
           this, SLOT(DetectNewObject()));
-  connect(main_window_, SIGNAL(NewScreenShot(cv::Mat)),
-          this, SLOT(HandleNewScreenshot(cv::Mat)));
+//  connect(main_window_, SIGNAL(NewScreenShot(cv::Mat*)),
+//          this, SLOT(HandleNewScreenshot(cv::Mat*)));
   connect(scene_, SIGNAL(DrawUnit(MovableUnit)),
           main_window_, SLOT(DrawCircle(MovableUnit)));
 }
@@ -82,6 +71,7 @@ void MainController::CalibrateCamera() {
   vector<cv::Point2f> corners;
 
   cv::Mat view = main_camera_->Capture();
+
   cv::Mat viewgray;
 
   if(FLIP_CAMERA_VIEW)
@@ -90,33 +80,39 @@ void MainController::CalibrateCamera() {
 
   //Step 2: detect the checkerboard and return the land marks coordinate in
   //camera plane
-  int tile_size = scene_->GetTileSize();
+//  int tile_size = scene_->GetTileSize();
   QSize scene_size = scene_->GetSize();
 
   //board size is 2 tile smaller than the total (screen_size)/(tile_size)
   //instead of 1 because of the margins
-  int board_w = floor(scene_size.width()/tile_size)-2;
-  int board_h = floor(scene_size.height()/tile_size)-2;
-  cv::Size board_size(board_w, board_h);
-
+//  int board_w = floor(scene_size.width()/tile_size)-2;
+//  int board_h = floor(scene_size.height()/tile_size)-2;
+//  cv::Size board_size(board_w, board_h);
+  cv::Size board_size(scene_size.width() - 1, scene_size.height() - 1);
   cv::cvtColor(view,viewgray,CV_BGR2GRAY);
   cv::imwrite("viewgray.png", viewgray);
 
   bool found = cv::findChessboardCorners(view, board_size, corners,
-                                         CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                                         CV_CALIB_CB_ADAPTIVE_THRESH |
+                                         CV_CALIB_CB_FAST_CHECK |
+                                         CV_CALIB_CB_NORMALIZE_IMAGE);
 
   if(found)
   {
-    cv::cornerSubPix(viewgray, corners, cv::Size(11, 11),
-                     cv::Size(-1,-1), cv::TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
-    cv::drawChessboardCorners( view, board_size, corners, found);
-    cv::imwrite("calibration_result.png", view);
+    cv::cornerSubPix(viewgray, corners,
+                     cv::Size(11, 11),
+                     cv::Size(-1,-1),
+                     cv::TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER,
+                                       30, 0.1 ));
+    cv::Mat temp = view.clone();
+    cv::drawChessboardCorners(temp, board_size, corners, found);
+    cv::imwrite("calibration_result.png", temp);
     scene_->SetCameraViewLandmarks(corners);
-    qDebug() << "finished calibration";
+    qDebug() << "found chessboard";
   }
   else
   {
-    qDebug() << "calibration failed";
+    qDebug() << "can not find chessboard";
   }
 
   //Step 3: Using the camera landmarks coordinate and our scene coordinates
@@ -130,20 +126,37 @@ void MainController::CalibrateCamera() {
           CV_RANSAC,
           3.0);
     scene_->SetCameraToDisplayHomo(H);
+
+    //Step 3-2: Test the homography matrix
+    cv::Mat test_points;
+    cv::Mat temp = main_window_->TakeScreenshot().clone();
+    cv::perspectiveTransform(cv::Mat(corners), test_points, H);
+    cv::drawChessboardCorners(temp, board_size, test_points, found);
+    cv::imwrite("homography_test.png", temp);
+
+    //Step 3-3: Test invert homography matrix
+    cv::Mat H_i = H.inv();
+    cv::Mat test_points1;
+    cv::perspectiveTransform(cv::Mat(display_points), test_points1, H_i);
+    temp = view.clone();
+    cv::drawChessboardCorners(temp, board_size, test_points1, found);
+    cv::imwrite("homography_inverse_test.png", temp);
   }
+
+
   //Step 4: display saturated color screen to detect the view area
-  main_window_->ClearColorBuffer(QColor(0, 255, 0));
-  cv::Mat screen1 = main_camera_->Capture();
-  cv::imwrite("green_screen.png", screen1);
+//  main_window_->ClearColorBuffer(QColor(0, 255, 0));
+//  cv::Mat screen1 = main_camera_->Capture();
+//  cv::imwrite("green_screen.png", screen1);
 
-  main_window_->ClearColorBuffer(QColor(144, 238, 144));
-  cv::Mat screen3 = main_camera_->Capture();
-  cv::imwrite("light_screen.png", screen3);
+//  main_window_->ClearColorBuffer(QColor(144, 238, 144));
+//  cv::Mat screen3 = main_camera_->Capture();
+//  cv::imwrite("light_green_screen.png", screen3);
 
 
-  main_window_->ClearColorBuffer(QColor(255,255,255));
-  cv::Mat screen2 = main_camera_->Capture();
-  cv::imwrite("white_screen.png", screen2);
+//  main_window_->ClearColorBuffer(QColor(255,255,255));
+//  cv::Mat screen2 = main_camera_->Capture();
+//  cv::imwrite("white_screen.png", screen2);
 
 
 }
@@ -154,8 +167,10 @@ void MainController::TileSizeChanged(int new_tile_size) {
   vector<cv::Point2f> checkerboard_inner_corners;
   QSize scene_size = scene_->GetSize();
 
-  int columns = floor(scene_size.width()/new_tile_size) - 2;
-  int rows = floor(scene_size.height()/new_tile_size) - 2;
+//  int columns = floor(scene_size.width()/new_tile_size) - 2;
+//  int rows = floor(scene_size.height()/new_tile_size) - 2;
+  int columns = scene_size.width() - 1;
+  int rows = scene_size.height() - 1;
 
   for(int j = 0; j < rows; j++)
   {
@@ -248,9 +263,9 @@ void MainController::DetectNewObject() {
   return;
 }
 
-void MainController::HandleNewScreenshot(const cv::Mat& new_screenshot) {
+void MainController::HandleNewScreenshot(cv::Mat* new_screenshot) {
   qDebug() << "pint out new screenshot";
-  cv::imwrite("screenshot.png", new_screenshot);
+  cv::imwrite("screenshot.png", *new_screenshot);
 }
 
 cv::Mat MainController::BackgroundSubstraction() {

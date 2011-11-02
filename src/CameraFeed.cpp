@@ -41,7 +41,7 @@ void CameraFeed::StopCapturing() {
 
 cv::Mat CameraFeed::Capture() {
   if(!frame_buffer_.empty())
-    return frame_buffer_;
+    return frame_buffer_.clone();
   else
   {
     if (!device_.isOpened()) {
@@ -49,13 +49,11 @@ cv::Mat CameraFeed::Capture() {
         throw std::runtime_error("Unable to capture from device id 1");
       }
     }
-
-    is_capturing_ = true;
     device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
     device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 
     device_ >> frame_buffer_;
-    return frame_buffer_;
+    return frame_buffer_.clone();
   }
 }
 

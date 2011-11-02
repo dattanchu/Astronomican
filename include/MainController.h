@@ -30,7 +30,7 @@ public slots:
   void SetSize(int new_width, int new_height);
   void GetReady();
   void HandleNewFrame(const cv::Mat& new_frame);
-  void HandleNewScreenshot(const cv::Mat& new_screenshot);
+  void HandleNewScreenshot(cv::Mat* new_screenshot);
 
 private:
   cv::Mat BackgroundSubstraction();
