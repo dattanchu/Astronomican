@@ -40,16 +40,23 @@ std::vector<cv::Point2f> SceneManager::GetCameraViewLandmarks() const{
 void SceneManager::SetCameraViewLandmarks(
     const std::vector<cv::Point2f>& new_landmarks)
 {
-    camera_view_landmarks = new_landmarks;
+  camera_view_landmarks = new_landmarks;
 }
 
-void SceneManager::SetCameraToDisplayHomo(const cv::Mat& new_homo) {
-  camera_to_display_homography = new_homo;
-}
+//void SceneManager::ClearScreenColor(QColor color)
+//{
+//  QBrush brush(color, Qt::SolidPattern);
+//  this->setBackgroundBrush(brush);
+//  emit (ScreenColorCleared(color));
+//}
 
-cv::Mat SceneManager::GetHomo() const{
-  return camera_to_display_homography;
-}
+//void SceneManager::SetCameraToDisplayHomo(const cv::Mat& new_homo) {
+//  camera_to_display_homography = new_homo;
+//}
+
+//cv::Mat SceneManager::GetHomo() const{
+//  return camera_to_display_homography;
+//}
 
 //void SceneManager::TrackNewMovableUnit(MovableUnit *new_unit) {
 //  movable_units.push_back(new_unit);
@@ -63,8 +70,8 @@ cv::Mat SceneManager::GetHomo() const{
 //  movable_units.clear();
 //}
 
-void SceneManager::DrawAllUnits() {
-  for ( int i = 0; i < movable_units.size(); i++ )  {
-    emit (DrawUnit(*movable_units[i]));
-  }
-}
+//void SceneManager::DrawAllUnits() {
+//  for ( int i = 0; i < movable_units.size(); i++ )  {
+//    emit (DrawUnit(*movable_units[i]));
+//  }
+//}

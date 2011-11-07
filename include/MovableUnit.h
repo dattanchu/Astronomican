@@ -13,25 +13,23 @@
    MovableUnit
 */
 class MovableUnit : public QGraphicsItem {
-  Q_OBJECT
-  Q_PROPERTY(QPoint location READ location WRITE setLocation)
-  Q_PROPERTY(float radius READ radius WRITE setRadius)
 public:
-  MovableUnit();
-  MovableUnit(QPoint location, float radius);
-  MovableUnit(const MovableUnit& unit);
-  void setLocation(const QPoint& new_point);
-  QPoint location() const;
+//  MovableUnit();
+//  MovableUnit(QPoint location, float radius);
+//  MovableUnit(const MovableUnit& unit);
+//  void setLocation(const QPoint& new_point);
+//  QPoint location() const;
   void setRadius(const float new_radius);
   float radius() const;
-  QRect boudingRect() const;
+  QRectF boundingRect() const;
   void paint(QPainter *painter,
              const QStyleOptionGraphicsItem *option,
              QWidget *widget);
 
 private:
-  // (0,0) is at the top left and x horizontal pointing left, y is vertical
-  // pointing down (similar to the indexing of matrices)
+  // (0,0) is at the top left and x horizontal pointing left,
+  // y is vertical pointing down (similar to the indexing of
+  // matrices)
   QPoint location_;
   float radius_; // This probably will only be choices among {28, 55???}
 };

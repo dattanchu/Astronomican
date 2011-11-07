@@ -6,6 +6,8 @@
 #include <QSize>
 #include <QPair>
 #include <QPixmap>
+#include <QString>
+#include <QSettings>
 
 #include <MainWindow.h>
 class CameraFeed;
@@ -31,7 +33,7 @@ public slots:
   void GetReady();
   void HandleNewFrame(const cv::Mat& new_frame);
   void HandleNewScreenshot(cv::Mat* new_screenshot);
-
+  void GetScreenAreaPicture(QColor color);
 private:
   cv::Mat BackgroundSubstraction();
   CameraFeed* main_camera_;

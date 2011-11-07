@@ -18,17 +18,21 @@ protected:
 //  void paintGL();
 //  void timeOut();
 //  void keyPressEvent(QKeyEvent *e);
+  void paintEvent(QPaintEvent *event);
 
 signals:
 //  void calibrate();
 //  void detect();
 //  void sizeChanged(int, int);
+  void paintEventFinished();
 
 public slots:
 //  void timeOutSlot();
+  void setCaptureInProgress(bool captureInProgress);
 
 private:
-  QTimer *m_timer;
+//  QTimer *m_timer;
+  bool captureInProgress_;
 };
 
 #endif

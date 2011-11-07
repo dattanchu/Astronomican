@@ -60,3 +60,18 @@
 //void SceneWidget::keyPressEvent(QKeyEvent *e) {
 
 //}
+
+void ViewManager::paintEvent(QPaintEvent *event) {
+  QGraphicsView::paintEvent(event);
+
+  if(captureInProgress_)
+  {
+    emit(paintEventFinished());
+    captureInProgress_ = false;
+  }
+}
+
+void ViewManager::setCaptureInProgress(bool captureInProgress)
+{
+  captureInProgress_ = captureInProgress;
+}

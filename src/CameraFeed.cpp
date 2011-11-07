@@ -8,7 +8,7 @@ CameraFeed::CameraFeed() {
 
 void CameraFeed::StartCapturing() {
   if (!device_.isOpened()) {
-    if (!device_.open(0)) {
+    if (!device_.open(1)) {
       throw std::runtime_error("Unable to capture from device id 1");
     }
   }
@@ -40,21 +40,39 @@ void CameraFeed::StopCapturing() {
 }
 
 cv::Mat CameraFeed::Capture() {
-  if(!frame_buffer_.empty())
-    return frame_buffer_.clone();
-  else
-  {
-    if (!device_.isOpened()) {
-      if (!device_.open(1)) {
-        throw std::runtime_error("Unable to capture from device id 1");
-      }
+  if (!device_.isOpened()) {
+    if (!device_.open(1)) {
+      throw std::runtime_error("Unable to capture from device id 1");
     }
-    device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-    device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-
-    device_ >> frame_buffer_;
-    return frame_buffer_.clone();
   }
+  device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+  device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+
+  device_ >> frame_buffer_;
+  emit (FrameCaptured(frame_buffer_));
+  return frame_buffer_.clone();
+}
+
+cv::Mat CameraFeed::Capture( QColor color ) {
+  if (!device_.isOpened()) {
+    if (!device_.open(1)) {
+      throw std::runtime_error("Unable to capture from device id 1");
+    }
+  }
+  device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+  device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+
+  device_ >> frame_buffer_;
+  emit (FrameCaptured(frame_buffer_, color));
+  return frame_buffer_.clone();
+}
+
+void CameraFeed::SetHomography(cv::Mat new_homography) {
+  camera_to_scene_homography_ = new_homography.clone();
+}
+
+cv::Mat CameraFeed::GetHomography() const{
+  return camera_to_scene_homography_;
 }
 
 //void CameraFeed::StopCalibrating() {

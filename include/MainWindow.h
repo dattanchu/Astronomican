@@ -15,6 +15,7 @@
 #include "MovableUnit.h"
 #include "ViewManager.h"
 #include "ui_MainWindow.h"
+#include "SceneManager.h"
 
 class MainWindow : public QMainWindow
 {
@@ -24,6 +25,7 @@ public:
   MainWindow();
   ~MainWindow();
   cv::Mat TakeScreenshot();
+  void SetUpSceneView(SceneManager* scene);
 public slots:
 //  void SetTileSize(int new_size);
 //  void ShowTheBoard();
@@ -31,14 +33,18 @@ public slots:
   void UiSizeChanged();
 //  void DrawCircle(MovableUnit unit);
 //  void ClearColorBuffer(QColor color);
+//  void repaintGamePage();
   void Toggle();
+  void RepaintGamePage(QColor color);
 
 signals:
+  void ViewColorCleared(QColor);
   void NewScreenShot(cv::Mat* screen);
   void detect();
   void calibrate();
   void sizeChanged(int new_width, int new_height);
   void tileSizeChanged(int new_size);
+  void takePicture();
 
 private:
   QDeclarativeView *qml_page;

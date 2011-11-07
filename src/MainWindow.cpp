@@ -16,8 +16,7 @@ MainWindow::MainWindow() : QMainWindow()
   qml_page->setSource(QUrl("qrc:///ui/Checkerboard.qml"));
   qml_page->setResizeMode(QDeclarativeView::SizeRootObjectToView);
 
-  this->game_page = new ViewManager;
-
+  this->game_page = new ViewManager();
 
   QGraphicsObject *background = qml_page->rootObject();
 
@@ -63,6 +62,16 @@ MainWindow::MainWindow() : QMainWindow()
 //                            );
 //}
 
+MainWindow::~MainWindow()
+{
+  delete this->qml_page;
+  delete this->game_page;
+}
+
+void MainWindow::SetUpSceneView(SceneManager *scene) {
+  game_page->setScene(scene);
+}
+
 void MainWindow::UiSizeChanged() {
   QGraphicsObject *background = qml_page->rootObject();
   int a(background->property("width").toInt()),
@@ -86,10 +95,6 @@ void MainWindow::UiSizeChanged() {
 //  background->setProperty("tile_size",new_size);
 //}
 
-MainWindow::~MainWindow()
-{
-  delete this->qml_page;
-}
 
 //void MainWindow::ShowTheBoard() {
 //  QGraphicsObject *background = qml_page->rootObject();
@@ -140,3 +145,13 @@ void MainWindow::Toggle() {
     ui.stackedWidget->setCurrentWidget(qml_page);
   }
 }
+
+void MainWindow::RepaintGamePage(QColor color)
+{
+  game_page->repaint();
+  emit (ViewColorCleared(color));
+}
+
+//void MainWindow::repaintGamePage() {
+//  game_page->repaint();
+//}

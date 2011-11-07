@@ -30,6 +30,7 @@ void MainController::AddCameraFeed(CameraFeed *camera_feed) {
 
 void MainController::SetUpMainWindow(MainWindow *window) {
   main_window_ = window;
+  main_window_->SetUpSceneView(scene_);
 }
 
 void MainController::SetSize(int new_width, int new_height) {
@@ -66,18 +67,20 @@ void MainController::CalibrateCamera() {
   //reserved flag to automatically flip the camera view so the corner are
   //found correctly
   //Step 1: detect the landmark and tell the camera if it is rotated or not
-  FLIP_CAMERA_VIEW = false;
+  FLIP_CAMERA_VIEW = true;
 
   qDebug() << "calibrating";
   vector<cv::Point2f> corners;
 
-  cv::Mat view = main_camera_->Capture();
+  cv::Mat capture = main_camera_->Capture();
+  cv::Mat view = main_window_->TakeScreenshot().clone();
 
   cv::Mat viewgray;
 
   if(FLIP_CAMERA_VIEW)
-  cv::flip(view, view, -1);
-  cv::imwrite("view.png",view);
+    cv::flip(capture, capture, -1);
+
+  cv::imwrite("view.png",capture);
 
   //Step 2: detect the checkerboard and return the land marks coordinate in
   //camera plane
@@ -90,10 +93,10 @@ void MainController::CalibrateCamera() {
 //  int board_h = floor(scene_size.height()/tile_size)-2;
 //  cv::Size board_size(board_w, board_h);
   cv::Size board_size(scene_size.width() - 1, scene_size.height() - 1);
-  cv::cvtColor(view,viewgray,CV_BGR2GRAY);
+  cv::cvtColor(capture,viewgray,CV_BGR2GRAY);
   cv::imwrite("viewgray.png", viewgray);
 
-  bool found = cv::findChessboardCorners(view, board_size, corners,
+  bool found = cv::findChessboardCorners(capture, board_size, corners,
                                          CV_CALIB_CB_ADAPTIVE_THRESH |
                                          CV_CALIB_CB_FAST_CHECK |
                                          CV_CALIB_CB_NORMALIZE_IMAGE);
@@ -105,7 +108,7 @@ void MainController::CalibrateCamera() {
                      cv::Size(-1,-1),
                      cv::TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER,
                                        30, 0.1 ));
-    cv::Mat temp = view.clone();
+    cv::Mat temp = capture.clone();
     cv::drawChessboardCorners(temp, board_size, corners, found);
     cv::imwrite("calibration_result.png", temp);
     scene_->SetCameraViewLandmarks(corners);
@@ -126,40 +129,61 @@ void MainController::CalibrateCamera() {
           cv::Mat(display_points),
           CV_RANSAC,
           3.0);
-    scene_->SetCameraToDisplayHomo(H);
+    main_camera_->SetHomography(H);
 
-    //Step 3-2: Test the homography matrix
-    cv::Mat test_points;
-    cv::Mat temp = main_window_->TakeScreenshot().clone();
-    cv::perspectiveTransform(cv::Mat(corners), test_points, H);
-    cv::drawChessboardCorners(temp, board_size, test_points, found);
-    cv::imwrite("homography_test.png", temp);
+    //Step 3-1: Test the homography matrix
+//    cv::Mat test_points;
+//    cv::Mat temp = view.clone();
+//    cv::perspectiveTransform(cv::Mat(corners), test_points, H);
+//    cv::drawChessboardCorners(temp, board_size, test_points, found);
+//    cv::imwrite("homography_test.png", temp);
 
-    //Step 3-3: Test invert homography matrix
-    cv::Mat H_i = H.inv();
-    cv::Mat test_points1;
-    cv::perspectiveTransform(cv::Mat(display_points), test_points1, H_i);
-    temp = view.clone();
-    cv::drawChessboardCorners(temp, board_size, test_points1, found);
-    cv::imwrite("homography_inverse_test.png", temp);
+//    //Step 3-2: Test invert homography matrix
+//    cv::Mat H_i = H.inv();
+//    cv::Mat test_points1;
+//    cv::perspectiveTransform(cv::Mat(display_points), test_points1, H_i);
+//    temp = capture.clone();
+//    cv::drawChessboardCorners(temp, board_size, test_points1, found);
+//    cv::imwrite("homography_inverse_test.png", temp);
+
+//    //Step 3-3: Test invert homography by drawing the captured chessboard
+//    //To the camera view
+//    temp = capture.clone();
+//    cv::Mat output;
+//    cv::warpPerspective(
+//          temp,
+//          output,
+//          H,
+//          cv::Size(view.cols,view.rows),
+//          (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
+//          );
+//    cv::imwrite("homography_inverse_test2.png", output);
+
   }
 
 
   //Step 4: display saturated color screen to detect the view area
-//  main_window_->ClearColorBuffer(QColor(0, 255, 0));
-//  cv::Mat screen1 = main_camera_->Capture();
-//  cv::imwrite("green_screen.png", screen1);
+  if(found) {
+  main_window_->Toggle();
+  connect(this->main_window_, SIGNAL(ViewColorCleared(QColor)),
+          this, SLOT(GetScreenAreaPicture(QColor)));
+//  connect(this->scene_, SIGNAL(ScreenColorCleared(QColor)),
+//          this, SLOT(GetScreenAreaPicture(QColor)));
 
-//  main_window_->ClearColorBuffer(QColor(144, 238, 144));
-//  cv::Mat screen3 = main_camera_->Capture();
-//  cv::imwrite("light_green_screen.png", screen3);
+  this->scene_->ClearScreenColor(QColor("green"));
+  this->main_window_->RepaintGamePage(QColor("green"));
+  this->scene_->ClearScreenColor(QColor("blue"));
+  this->main_window_->RepaintGamePage(QColor("blue"));
+  this->scene_->ClearScreenColor(QColor("white"));
+  this->main_window_->RepaintGamePage(QColor("white"));
 
+//  disconnect(this->scene_, SIGNAL(ScreenColorCleared(QColor)),
+//          this, SLOT(GetScreenAreaPicture(QColor)));
+  disconnect(this->main_window_, SIGNAL(ViewColorCleared(QColor)),
+          this, SLOT(GetScreenAreaPicture(QColor)));
+  main_window_->Toggle();
 
-//  main_window_->ClearColorBuffer(QColor(255,255,255));
-//  cv::Mat screen2 = main_camera_->Capture();
-//  cv::imwrite("white_screen.png", screen2);
-
-
+  }
 }
 
 void MainController::TileSizeChanged(int new_tile_size) {
@@ -187,13 +211,28 @@ void MainController::TileSizeChanged(int new_tile_size) {
 }
 
 void MainController::DetectNewObject() {
+  cv::Mat capture  = main_camera_->Capture(), gray, edges;
+  cv::Mat view = main_window_->TakeScreenshot();
+  cv::Mat CVM; //capture to view matrix
+
+  if(FLIP_CAMERA_VIEW)
+    cv::flip(capture, capture, -1);
 
   //Step 0:background substraction
+  //0-1 transform the capture image to view space
+  cv::warpPerspective(
+        capture,
+        CVM,
+        H,
+        cv::Size(view.cols,view.rows),
+        (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
+        );
+
+  //0-2 Substract the CVM to current window view
+
 
   //Step 1: find the circles
-  cv::Mat img  = main_camera_->Capture(), gray, edges;
-
-  cv::cvtColor(img, gray, CV_BGR2GRAY);
+  cv::cvtColor(capture, gray, CV_BGR2GRAY);
   cv::GaussianBlur(gray, gray, cv::Size(9,9), 2, 2);
   cv::imwrite("gaussianBlur.png", gray);
 
@@ -209,10 +248,10 @@ void MainController::DetectNewObject() {
                    100,
                    30.0,
                    5,
-                   50
+                   35
                    );
 
-  //Step 2: print out the capture image with circles marked
+  //Step 2: print out the camera image with circles marked
   if(circles.size() > 0)
   {
     qDebug() << "found" << circles.size() << "in the screen";
@@ -221,19 +260,19 @@ void MainController::DetectNewObject() {
       cv::Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
       int radius = cvRound(circles[i][2]);
       // draw the circle center
-      circle( img, center, 3, cv::Scalar(0,255,0), -1, 8, 0 );
+      circle( capture, center, 3, cv::Scalar(0,255,0), -1, 8, 0 );
       // draw the circle outline
-      circle( img, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );
+      circle( capture, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );
     }
-    cv::imwrite("detect_result.png", img);
+    cv::imwrite("detect_result.png", capture);
   }
   else
   {
     qDebug() << "no circles found";
   }
 
-  //Step 3: apply homogrpahy to transform the coordination from camera view
-  //to computer display view
+  //Step 3: apply homogrpahy to transform the coordination from
+  //camera view to computer display view
   vector<cv::Point2f> points;
   for( int i = 0; i < circles.size(); i++)
   {
@@ -241,30 +280,29 @@ void MainController::DetectNewObject() {
   }
   cv::Mat view_plane_points(points);
   cv::Mat display_plane_points;
-  cv::Mat H = scene_->GetHomo().clone();
+  cv::Mat H = main_camera_->GetHomography().clone();
   cv::perspectiveTransform(view_plane_points, display_plane_points, H);
 
   //Step 4: Make sure the found units are all unique
   //for now it just clean the scene manager tracking unit vector
-
-//  scene_->ClearTracker();
   qDeleteAll( scene_->items() );
 
   //Step 5: Adding the found units into the scene manager
-  for( int i = 0; i < display_plane_points.rows ;i++ ) {
-    MovableUnit *unit =
-        new MovableUnit(
-          QPoint(display_plane_points.at<cv::Point2f>(i).x,
-                 display_plane_points.at<cv::Point2f>(i).y),
-          circles[i][2]);
+  for( int i = 0; i < display_plane_points.rows ;i++ )
+  {
+    MovableUnit *unit = new MovableUnit();
 
-//    scene_->TrackNewMovableUnit(unit);
+    QPoint unit_pos(-display_plane_points.at<cv::Point2f>(i).x,
+                    -display_plane_points.at<cv::Point2f>(i).y);
+    unit->setPos(unit_pos);
+    //    scene_->TrackNewMovableUnit(unit);
+    unit->setRadius(circles[i][2]);
     scene_->addItem(unit);
   }
   qDebug() << "tracking" << scene_->items().count();
-
   //Step 7: call the draw function for found units
-  scene_->DrawAllUnits();
+//  scene_->DrawAllUnits();
+  main_window_->update();
   return;
 }
 
@@ -274,15 +312,25 @@ void MainController::HandleNewScreenshot(cv::Mat* new_screenshot) {
 }
 
 cv::Mat MainController::BackgroundSubstraction() {
-  //Step 1: detect the screen area and clear out the area outside
+//  Step 1: detect the screen area and clear out the area outside
 //  cv::Mat screenshot = main_camera_->Capture();
 //  cv::Mat cropped_screenshot = cv::Mat(screenshot, cv::Rect());
-//  //Step 2: using homography matrix calculate the projected background
+
+//  Step 2: using homography matrix calculate the projected background
 //  cv::Mat background = main_window_->TakeScreenshot();
 //  cv::Mat projected_background;
 //  cv::Mat H = scene_->GetHomo();
 //  cv::perspectiveTransform(background, projected_background, H);
-//  //Step 3: using matrix substraction to found the different pixels
+
+//  Step 3: using matrix substraction to found the different pixels
 //  cv::Mat foreground;
-  //Step 4: return the processed picture
+
+  //  Step 4: return the processed picture
+}
+
+void MainController::GetScreenAreaPicture(QColor color)
+{
+  QString filename = color.name() + "_screen.png";
+  cv::Mat frame = this->main_camera_->Capture();
+  cv::imwrite(filename.toStdString(), frame);
 }

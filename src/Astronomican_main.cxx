@@ -2,13 +2,12 @@
 #include <QtDeclarative/QDeclarativeView>
 #include <QtDeclarative/QDeclarativeContext>
 #include <QDeclarativeEngine>
-#include <QDeclarativeComponent>
 #include <QSize>
 #include <QtCore>
 #include <QtGui>
 #include <QMainWindow>
 #include <QObject>
-
+#include <QSettings>
 
 #include "MainController.h"
 #include "CameraFeed.h"
@@ -17,8 +16,8 @@
 
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
-  qmlRegisterType<MovableUnit>("Unit", 1, 0, "MovableUnit");
-
+//  qmlRegisterType<MovableUnit>("Unit", 1, 0, "MovableUnit");
+  QSettings settings("Besbin", "Astronomican");
 
   MainController main_controller;
   CameraFeed camera1;
@@ -35,7 +34,7 @@ int main(int argc, char** argv) {
 
   main_window.show();
 //  main_controller.CalibrateCamera();
-  camera1.StartCapturing(0);
+  camera1.StartCapturing(1);
   //TODO tchu: signal MainWindow to change into calibrating mode,
   //then use the camera to detect the board
 
