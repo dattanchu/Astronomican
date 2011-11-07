@@ -17,19 +17,19 @@
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
 //  qmlRegisterType<MovableUnit>("Unit", 1, 0, "MovableUnit");
-  QSettings settings("Besbin", "Astronomican");
+  QSettings *settings = new QSettings("Astronomican.ini", QSettings::IniFormat);
 
-  MainController main_controller;
+  MainController main_controller(settings);
   CameraFeed camera1;
   main_controller.AddCameraFeed(&camera1);
 
-  MainWindow main_window;
+  MainWindow main_window(settings);
   main_controller.SetUpMainWindow(&main_window);
 
   main_controller.GetReady();
 //  view.rootContext()->setContextProperty("camera_feed", &camera1);
 //  view.rootContext()->setContextProperty("main_controller", &main_controller);
-  main_window.setGeometry(0, 0, 800, 600);
+//  main_window.setGeometry(0, 0, 800, 600);
 //  view.showFullScreen()
 
   main_window.show();
@@ -40,4 +40,6 @@ int main(int argc, char** argv) {
 
 
   app.exec();
+  delete settings;
+  return 0;
 }

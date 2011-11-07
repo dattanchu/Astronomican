@@ -6,7 +6,7 @@
 #include <cv.h>
 #include <QGraphicsScene>
 #include "MovableUnit.h"
-
+#include <QSettings>
 
 /** \class SceneManager
    Manage in memory the location of the different objects and other properties
@@ -15,10 +15,12 @@
 class SceneManager : public QGraphicsScene {
   Q_OBJECT
 public:
-  SceneManager();
+  SceneManager(QSettings *settings);
+  ~SceneManager();
 //  void TrackNewMovableUnit(MovableUnit *new_unit);
 //  int TrackingUnitsNumber();
 //  void ClearTracker();
+
   void SetSize (const QSize &new_size);
   void SetTileSize (const int new_tile_size);
   // TODO(tchu): Move to QSize GetSize()Tracconst as appropriate
@@ -33,6 +35,9 @@ public:
 
 //  void DrawAllUnits();
   QSize& GetSize();
+  void readSettings();
+  void writeSettings();
+
 public slots:
 //  void ClearScreenColor(QColor color);
 protected:
@@ -45,6 +50,7 @@ private:
   std::vector<MovableUnit*> movable_units;
   std::vector<cv::Point2f> window_view_landmarks;
   std::vector<cv::Point2f> camera_view_landmarks;
+  QSettings *settings_;
   QSize size_;
   int tile_size_;
 };

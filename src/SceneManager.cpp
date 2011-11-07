@@ -1,9 +1,12 @@
 #include "SceneManager.h"
 #include "QtCore"
 
-SceneManager::SceneManager(){
-  size_ = QSize(800, 600);
-  tile_size_ = 170;
+SceneManager::SceneManager(QSettings *settings){
+  settings_ = settings;
+  this->readSettings();
+}
+SceneManager::~SceneManager() {
+  this->writeSettings();
 }
 
 void SceneManager::SetSize(const QSize &new_size) {
@@ -42,6 +45,31 @@ void SceneManager::SetCameraViewLandmarks(
 {
   camera_view_landmarks = new_landmarks;
 }
+
+void SceneManager::writeSettings()
+{
+//  QSettings settings(QSettings::IniFormat, QSettings::UserScope,
+//                     "Tri Chu", "Astronomican");
+//  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+
+  settings_->beginGroup("SceneManager");
+  settings_->setValue("size", this->GetSize());
+  settings_->setValue("tileSize", this->GetTileSize());
+  settings_->endGroup();
+}
+
+void SceneManager::readSettings()
+{
+//  QSettings settings(QSettings::IniFormat, QSettings::UserScope,
+//                     "Tri Chu", "Astronomican");
+//  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+
+  settings_->beginGroup("SceneManager");
+  size_ = settings_->value("size", QSize(800, 600)).toSize();
+  tile_size_ = settings_->value("tileSize", 150).toInt();
+  settings_->endGroup();
+}
+
 
 //void SceneManager::ClearScreenColor(QColor color)
 //{

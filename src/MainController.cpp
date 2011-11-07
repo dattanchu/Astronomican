@@ -15,13 +15,17 @@
 
 using namespace std;
 
-MainController::MainController() {
+MainController::MainController(QSettings *settings) {
   main_camera_ = NULL;
-  scene_ = new SceneManager();
+  settings_ = settings;
+  scene_ = new SceneManager(settings_);
 }
 
 MainController::~MainController() {
+  delete main_window_;
   delete scene_;
+  main_camera_->StopCapturing();
+  delete main_camera_;
 }
 
 void MainController::AddCameraFeed(CameraFeed *camera_feed) {
@@ -49,6 +53,8 @@ void MainController::GetReady() {
           this, SLOT(CalibrateCamera()));
   connect(main_window_, SIGNAL(detect()),
           this, SLOT(DetectNewObject()));
+  connect(main_window_, SIGNAL(Quit()),
+          this, SLOT(Exit()));
 //  connect(main_window_, SIGNAL(NewScreenShot(cv::Mat*)),
 //          this, SLOT(HandleNewScreenshot(cv::Mat*)));
 //  connect(scene_, SIGNAL(DrawUnit(MovableUnit)),
@@ -72,7 +78,7 @@ void MainController::CalibrateCamera() {
   qDebug() << "calibrating";
   vector<cv::Point2f> corners;
 
-  cv::Mat capture = main_camera_->Capture();
+  cv::Mat capture = main_camera_->CaptureOneShot();
   cv::Mat view = main_window_->TakeScreenshot().clone();
 
   cv::Mat viewgray;
@@ -132,58 +138,59 @@ void MainController::CalibrateCamera() {
     main_camera_->SetHomography(H);
 
     //Step 3-1: Test the homography matrix
-//    cv::Mat test_points;
-//    cv::Mat temp = view.clone();
-//    cv::perspectiveTransform(cv::Mat(corners), test_points, H);
-//    cv::drawChessboardCorners(temp, board_size, test_points, found);
-//    cv::imwrite("homography_test.png", temp);
+    cv::Mat test_points;
+    cv::Mat temp = view.clone();
+    cv::perspectiveTransform(cv::Mat(corners), test_points, H);
+    cv::drawChessboardCorners(temp, board_size, test_points, found);
+    cv::imwrite("homography_test.png", temp);
 
-//    //Step 3-2: Test invert homography matrix
-//    cv::Mat H_i = H.inv();
-//    cv::Mat test_points1;
-//    cv::perspectiveTransform(cv::Mat(display_points), test_points1, H_i);
-//    temp = capture.clone();
-//    cv::drawChessboardCorners(temp, board_size, test_points1, found);
-//    cv::imwrite("homography_inverse_test.png", temp);
+    //Step 3-2: Test invert homography matrix
+    cv::Mat H_i = H.inv();
+    cv::Mat test_points1;
+    cv::perspectiveTransform(cv::Mat(display_points), test_points1, H_i);
+    temp = capture.clone();
+    cv::drawChessboardCorners(temp, board_size, test_points1, found);
+    cv::imwrite("homography_inverse_test.png", temp);
 
-//    //Step 3-3: Test invert homography by drawing the captured chessboard
-//    //To the camera view
-//    temp = capture.clone();
-//    cv::Mat output;
-//    cv::warpPerspective(
-//          temp,
-//          output,
-//          H,
-//          cv::Size(view.cols,view.rows),
-//          (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
-//          );
-//    cv::imwrite("homography_inverse_test2.png", output);
-
-  }
-
-
-  //Step 4: display saturated color screen to detect the view area
-  if(found) {
-  main_window_->Toggle();
-  connect(this->main_window_, SIGNAL(ViewColorCleared(QColor)),
-          this, SLOT(GetScreenAreaPicture(QColor)));
-//  connect(this->scene_, SIGNAL(ScreenColorCleared(QColor)),
-//          this, SLOT(GetScreenAreaPicture(QColor)));
-
-  this->scene_->ClearScreenColor(QColor("green"));
-  this->main_window_->RepaintGamePage(QColor("green"));
-  this->scene_->ClearScreenColor(QColor("blue"));
-  this->main_window_->RepaintGamePage(QColor("blue"));
-  this->scene_->ClearScreenColor(QColor("white"));
-  this->main_window_->RepaintGamePage(QColor("white"));
-
-//  disconnect(this->scene_, SIGNAL(ScreenColorCleared(QColor)),
-//          this, SLOT(GetScreenAreaPicture(QColor)));
-  disconnect(this->main_window_, SIGNAL(ViewColorCleared(QColor)),
-          this, SLOT(GetScreenAreaPicture(QColor)));
-  main_window_->Toggle();
+    //Step 3-3: Test homography by drawing the
+    //captured chessboard to the vitural view
+    cv::Mat output;
+    cv::warpPerspective(
+          capture,
+          output,
+          H,
+          cv::Size(view.cols,view.rows),
+          (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
+          );
+    cv::drawChessboardCorners(output, board_size, test_points, found);
+    cv::imwrite("homography_test2.png", output);
 
   }
+
+
+//  //Step 4: display saturated color screen to detect the view area
+//  if(found) {
+//  main_window_->Toggle();
+//  connect(this->main_window_, SIGNAL(ViewColorCleared(QColor)),
+//          this, SLOT(GetScreenAreaPicture(QColor)));
+////  connect(this->scene_, SIGNAL(ScreenColorCleared(QColor)),
+////          this, SLOT(GetScreenAreaPicture(QColor)));
+
+//  this->scene_->ClearScreenColor(QColor("green"));
+//  this->main_window_->RepaintGamePage(QColor("green"));
+//  this->scene_->ClearScreenColor(QColor("blue"));
+//  this->main_window_->RepaintGamePage(QColor("blue"));
+//  this->scene_->ClearScreenColor(QColor("white"));
+//  this->main_window_->RepaintGamePage(QColor("white"));
+
+////  disconnect(this->scene_, SIGNAL(ScreenColorCleared(QColor)),
+////          this, SLOT(GetScreenAreaPicture(QColor)));
+//  disconnect(this->main_window_, SIGNAL(ViewColorCleared(QColor)),
+//          this, SLOT(GetScreenAreaPicture(QColor)));
+//  main_window_->Toggle();
+
+//  }
+
 }
 
 void MainController::TileSizeChanged(int new_tile_size) {
@@ -191,6 +198,7 @@ void MainController::TileSizeChanged(int new_tile_size) {
   int offset = new_tile_size + new_tile_size/2;
   vector<cv::Point2f> checkerboard_inner_corners;
   QSize scene_size = scene_->GetSize();
+
 
 //  int columns = floor(scene_size.width()/new_tile_size) - 2;
 //  int rows = floor(scene_size.height()/new_tile_size) - 2;
@@ -211,9 +219,11 @@ void MainController::TileSizeChanged(int new_tile_size) {
 }
 
 void MainController::DetectNewObject() {
-  cv::Mat capture  = main_camera_->Capture(), gray, edges;
+
+  cv::Mat capture  = main_camera_->CaptureOneShot(), gray, edges;
   cv::Mat view = main_window_->TakeScreenshot();
   cv::Mat CVM; //capture to view matrix
+  cv::Mat H = main_camera_->GetHomography().clone();
 
   if(FLIP_CAMERA_VIEW)
     cv::flip(capture, capture, -1);
@@ -227,8 +237,11 @@ void MainController::DetectNewObject() {
         cv::Size(view.cols,view.rows),
         (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
         );
-
+  cv::imwrite("CVM.png", CVM);
   //0-2 Substract the CVM to current window view
+  cv::Mat CVM_gray;
+  cv::cvtColor(CVM, CVM_gray, CV_BGR2GRAY);
+  cv::GaussianBlur(view, view, cv::Size(3, 5) )
 
 
   //Step 1: find the circles
@@ -280,7 +293,7 @@ void MainController::DetectNewObject() {
   }
   cv::Mat view_plane_points(points);
   cv::Mat display_plane_points;
-  cv::Mat H = main_camera_->GetHomography().clone();
+
   cv::perspectiveTransform(view_plane_points, display_plane_points, H);
 
   //Step 4: Make sure the found units are all unique
@@ -292,8 +305,8 @@ void MainController::DetectNewObject() {
   {
     MovableUnit *unit = new MovableUnit();
 
-    QPoint unit_pos(-display_plane_points.at<cv::Point2f>(i).x,
-                    -display_plane_points.at<cv::Point2f>(i).y);
+    QPoint unit_pos(display_plane_points.at<cv::Point2f>(i).x,
+                    display_plane_points.at<cv::Point2f>(i).y);
     unit->setPos(unit_pos);
     //    scene_->TrackNewMovableUnit(unit);
     unit->setRadius(circles[i][2]);
@@ -321,16 +334,34 @@ cv::Mat MainController::BackgroundSubstraction() {
 //  cv::Mat projected_background;
 //  cv::Mat H = scene_->GetHomo();
 //  cv::perspectiveTransform(background, projected_background, H);
-
 //  Step 3: using matrix substraction to found the different pixels
 //  cv::Mat foreground;
 
   //  Step 4: return the processed picture
 }
 
-void MainController::GetScreenAreaPicture(QColor color)
+//void MainController::readSettings()
+//{
+////  QSettings settings("Tri Chu", "Astronomican");
+//  QPoint pos = settings_.value("pos", QPoint(200, 200)).toPoint();
+//  QSize size = settings_.value("size", QSize(800, 600)).toSize();
+//  main_window_->resize(size);
+//  main_window_->move(pos);
+//}
+//void MainController::writeSettings()
+//{
+//}
+
+void MainController::Exit()
 {
-  QString filename = color.name() + "_screen.png";
-  cv::Mat frame = this->main_camera_->Capture();
-  cv::imwrite(filename.toStdString(), frame);
+  delete scene_;
+  main_camera_->StopCapturing();
+  QApplication::exit(0);
 }
+
+//void MainController::GetScreenAreaPicture(QColor color)
+//{
+//  QString filename = color.name() + "_screen.png";
+//  cv::Mat frame = this->main_camera_->Capture();
+//  cv::imwrite(filename.toStdString(), frame);
+//}

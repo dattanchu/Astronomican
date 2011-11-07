@@ -18,12 +18,15 @@ class SceneManager;
 class MainController: public QObject {
   Q_OBJECT
 public:
-  MainController();
+  MainController(QSettings *settings);
   ~MainController();
   void AddCameraFeed(CameraFeed* camera_feed);
   void SetUpMainWindow(MainWindow *window);
+//  void readSettings();
+//  void writeSettings();
 
 signals:
+  void Quit();
 
 public slots:
   void TileSizeChanged(int new_tile_size);
@@ -33,8 +36,11 @@ public slots:
   void GetReady();
   void HandleNewFrame(const cv::Mat& new_frame);
   void HandleNewScreenshot(cv::Mat* new_screenshot);
-  void GetScreenAreaPicture(QColor color);
+//  void GetScreenAreaPicture(QColor color);
+  void Exit();
+
 private:
+  QSettings* settings_;
   cv::Mat BackgroundSubstraction();
   CameraFeed* main_camera_;
   SceneManager* scene_;

@@ -8,9 +8,11 @@
 #include <string>
 #include <QObject>
 #include <QStackedWidget>
+#include <QSettings>
 
 #include <QtDeclarative/QDeclarativeView>
 #include <QtScript/QScriptEngine>
+#include <QtGui>
 
 #include "MovableUnit.h"
 #include "ViewManager.h"
@@ -22,10 +24,16 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  MainWindow();
+  MainWindow(QSettings *settings);
   ~MainWindow();
   cv::Mat TakeScreenshot();
   void SetUpSceneView(SceneManager* scene);
+  void readSettings();
+  void writeSettings();
+
+protected:
+  void closeEvent(QCloseEvent *event);
+
 public slots:
 //  void SetTileSize(int new_size);
 //  void ShowTheBoard();
@@ -45,8 +53,10 @@ signals:
   void sizeChanged(int new_width, int new_height);
   void tileSizeChanged(int new_size);
   void takePicture();
+  void Quit();
 
 private:
+  QSettings *settings_;
   QDeclarativeView *qml_page;
   Ui::MainWindow ui;
   ViewManager *game_page;

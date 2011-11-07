@@ -4,6 +4,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include <QColor>
+#include <QTimer>
 
 class CameraFeed : public QObject {
   Q_OBJECT
@@ -17,8 +18,9 @@ public slots:
   void StartCapturing();
   void StartCapturing(int device_id);
   void StopCapturing();
-  cv::Mat Capture();
-  cv::Mat Capture(QColor color);
+  void Capture();
+  cv::Mat CaptureOneShot();
+  cv::Mat CaptureOneShot(QColor color);
 //  void StartCalibrating(cv::Size pattern_size);
 //  void StopCalibrating();
   void SetHomography(cv::Mat new_homography);
@@ -26,9 +28,10 @@ public slots:
 private:
   cv::Mat frame_buffer_;
   cv::Mat camera_to_scene_homography_;
-  bool is_capturing_;
+//  bool is_capturing_;
 //  bool is_calibrating_;
   cv::VideoCapture device_;
+  QTimer timer_;
 
 };
 

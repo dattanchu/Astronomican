@@ -3,7 +3,7 @@ import Qt 4.7
 Item {
   id:container;
   signal sizeChanged( int rows, int columns );
-  property int tile_size: 170;
+  property int tile_size: 150;
 
   onWidthChanged: {
     sizeChanged( board.columns, board.rows );

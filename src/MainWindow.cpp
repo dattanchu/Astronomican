@@ -9,8 +9,9 @@
 #include "opencv2/calib3d/calib3d.hpp"
 #include "opencv2/video/tracking.hpp"
 
-MainWindow::MainWindow() : QMainWindow()
+MainWindow::MainWindow(QSettings *settings) : QMainWindow()
 {
+  settings_ = settings;
   ui.setupUi(this);
   qml_page = new QDeclarativeView;
   qml_page->setSource(QUrl("qrc:///ui/Checkerboard.qml"));
@@ -43,6 +44,7 @@ MainWindow::MainWindow() : QMainWindow()
   connect(background, SIGNAL(sizeChanged(int,int)),
           this, SLOT(UiSizeChanged()));
 
+  this->readSettings();
   emit ( sizeChanged( this->width()/170, this->height()/170));
 
 //  setCentralWidget(this->qml_page);
@@ -64,6 +66,7 @@ MainWindow::MainWindow() : QMainWindow()
 
 MainWindow::~MainWindow()
 {
+  this->writeSettings();
   delete this->qml_page;
   delete this->game_page;
 }
@@ -83,7 +86,7 @@ void MainWindow::UiSizeChanged() {
     b = a % b;
     a = t;
   }
-  int new_size = (a > 170)? a : 170;
+  int new_size = (a > 150)? a : 150;
 
   qDebug() << "Current tile size is" << new_size;
   background->setProperty("tile_size",new_size);
@@ -152,6 +155,36 @@ void MainWindow::RepaintGamePage(QColor color)
   emit (ViewColorCleared(color));
 }
 
+void MainWindow::readSettings()
+{
+//  QSettings settings(QSettings::IniFormat, QSettings::UserScope,
+//                    "Tri Chu", "Astronomican");
+//  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+
+ settings_->beginGroup("MainWindow");
+ resize(settings_->value("size", QSize(800, 600)).toSize());
+ move(settings_->value("pos", QPoint(200, 200)).toPoint());
+ settings_->endGroup();
+}
+
+void MainWindow::writeSettings()
+{
+//  QSettings settings(QSettings::IniFormat, QSettings::UserScope,
+//                     "Tri Chu", "Astronomican");
+//  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+
+  settings_->beginGroup("MainWindow");
+  settings_->setValue("size", this->size());
+  settings_->setValue("pos", this->pos());
+  settings_->endGroup();
+}
+
 //void MainWindow::repaintGamePage() {
 //  game_page->repaint();
 //}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+  writeSettings();
+  emit(Quit());
+//  event->accept();
+}

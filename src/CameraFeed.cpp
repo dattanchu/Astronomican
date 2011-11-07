@@ -1,45 +1,51 @@
 #include "CameraFeed.h"
 #include <stdexcept>
 #include <QtCore>
+#include <QApplication>
 
 CameraFeed::CameraFeed() {
-  is_capturing_ = false;
+//  is_capturing_ = false;
+  timer_.setInterval(100);
+  connect(&timer_, SIGNAL(timeout()),
+          this, SLOT(Capture()));
 }
 
 void CameraFeed::StartCapturing() {
-  if (!device_.isOpened()) {
-    if (!device_.open(1)) {
-      throw std::runtime_error("Unable to capture from device id 1");
-    }
-  }
+//  if (!device_.isOpened()) {
+//    if (!device_.open(1)) {
+//      throw std::runtime_error("Unable to capture from device id 1");
+//    }
+//  }
 
-  is_capturing_ = true;
-  device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-  device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+//  is_capturing_ = true;
+  timer_.start();
 
-  while (is_capturing_) {
-    device_ >> frame_buffer_;
-    emit HasNewFrame(frame_buffer_);
-  }
+
+//  while (is_capturing_) {
+//    QApplication::processEvents();
+//    device_ >> frame_buffer_;
+//    emit HasNewFrame(frame_buffer_);
+//  }
 }
 
 void CameraFeed::StartCapturing(int device_id) {
-  if (device_.isOpened()) {
-    device_.release();
-  }
+//  if (device_.isOpened()) {
+//    device_.release();
+//  }
 
-  if (!device_.open(device_id)) {
-    throw std::runtime_error("Unable to capture from device id " + device_id);
-  }
+//  if (!device_.open(device_id)) {
+//    throw std::runtime_error("Unable to capture from device id " + device_id);
+//  }
 
   StartCapturing();
 }
 
 void CameraFeed::StopCapturing() {
-  is_capturing_ = false;
+//  is_capturing_ = false;
+  timer_.stop();
 }
 
-cv::Mat CameraFeed::Capture() {
+cv::Mat CameraFeed::CaptureOneShot() {
   if (!device_.isOpened()) {
     if (!device_.open(1)) {
       throw std::runtime_error("Unable to capture from device id 1");
@@ -53,7 +59,7 @@ cv::Mat CameraFeed::Capture() {
   return frame_buffer_.clone();
 }
 
-cv::Mat CameraFeed::Capture( QColor color ) {
+cv::Mat CameraFeed::CaptureOneShot( QColor color ) {
   if (!device_.isOpened()) {
     if (!device_.open(1)) {
       throw std::runtime_error("Unable to capture from device id 1");
@@ -73,6 +79,21 @@ void CameraFeed::SetHomography(cv::Mat new_homography) {
 
 cv::Mat CameraFeed::GetHomography() const{
   return camera_to_scene_homography_;
+}
+
+void CameraFeed::Capture()
+{
+  if (!device_.isOpened()) {
+    if (!device_.open(1)) {
+      throw std::runtime_error("Unable to capture from device id 1");
+    }
+  }
+  device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+  device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+
+  QApplication::processEvents();
+  device_ >> frame_buffer_;
+  emit (HasNewFrame(frame_buffer_));
 }
 
 //void CameraFeed::StopCalibrating() {
