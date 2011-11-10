@@ -9,10 +9,13 @@
 #include <QObject>
 #include <QStackedWidget>
 #include <QSettings>
+#include <QComboBox>
+#include <QtGui>
+#include <QString>
+#include <QSize>
 
 #include <QtDeclarative/QDeclarativeView>
 #include <QtScript/QScriptEngine>
-#include <QtGui>
 
 #include "MovableUnit.h"
 #include "ViewManager.h"
@@ -24,15 +27,16 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  MainWindow(QSettings *settings);
+  MainWindow();
   ~MainWindow();
   cv::Mat TakeScreenshot();
   void SetUpSceneView(SceneManager* scene);
   void readSettings();
   void writeSettings();
-
+  QSize GetUISize();
 protected:
   void closeEvent(QCloseEvent *event);
+  void keyPressEvent(QKeyEvent *);
 
 public slots:
 //  void SetTileSize(int new_size);
@@ -43,23 +47,26 @@ public slots:
 //  void ClearColorBuffer(QColor color);
 //  void repaintGamePage();
   void Toggle();
+  void SwitchToGamePage();
   void RepaintGamePage(QColor color);
 
 signals:
   void ViewColorCleared(QColor);
   void NewScreenShot(cv::Mat* screen);
-  void detect();
-  void calibrate();
+  void Detect();
+  void Calibrate();
+  void DiceRegisterSetup();
+  void DiceRegisterMain();
   void sizeChanged(int new_width, int new_height);
   void tileSizeChanged(int new_size);
   void takePicture();
   void Quit();
 
 private:
-  QSettings *settings_;
-  QDeclarativeView *qml_page;
+//  QSettings *settings_;
+  QDeclarativeView *qml_Page_;
   Ui::MainWindow ui;
-  ViewManager *game_page;
+  ViewManager *game_page_;
 };
 
 

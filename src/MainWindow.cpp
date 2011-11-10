@@ -9,17 +9,17 @@
 #include "opencv2/calib3d/calib3d.hpp"
 #include "opencv2/video/tracking.hpp"
 
-MainWindow::MainWindow(QSettings *settings) : QMainWindow()
+MainWindow::MainWindow() : QMainWindow()
 {
-  settings_ = settings;
+//  settings_ = settings;
   ui.setupUi(this);
-  qml_page = new QDeclarativeView;
-  qml_page->setSource(QUrl("qrc:///ui/Checkerboard.qml"));
-  qml_page->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+  qml_Page_ = new QDeclarativeView;
+  qml_Page_->setSource(QUrl("qrc:///ui/Checkerboard.qml"));
+  qml_Page_->setResizeMode(QDeclarativeView::SizeRootObjectToView);
 
-  this->game_page = new ViewManager();
+  this->game_page_ = new ViewManager();
 
-  QGraphicsObject *background = qml_page->rootObject();
+  QGraphicsObject *background = qml_Page_->rootObject();
 
 //  connect(background, SIGNAL(sizeChanged(int, int)),
 //          this, SIGNAL(sizeChanged(int, int)));
@@ -34,23 +34,26 @@ MainWindow::MainWindow(QSettings *settings) : QMainWindow()
 //  connect(background, SIGNAL(screencap()),
 //          this, SLOT(TakeScreenshot()));
   connect(ui.Detect, SIGNAL(clicked()),
-          this, SIGNAL(detect()));
+          this, SIGNAL(Detect()));
   connect(ui.Calibration, SIGNAL(clicked()),
-          this, SIGNAL(calibrate()));
+          this, SIGNAL(Calibrate()));
   connect(ui.Toggle, SIGNAL(clicked()),
           this, SLOT(Toggle()));
+  connect(ui.DiceRegister, SIGNAL(clicked()),
+          this, SIGNAL(DiceRegister()));
+
   connect(background, SIGNAL(sizeChanged(int,int)),
           this, SIGNAL(sizeChanged(int,int)));
   connect(background, SIGNAL(sizeChanged(int,int)),
           this, SLOT(UiSizeChanged()));
 
   this->readSettings();
-  emit ( sizeChanged( this->width()/170, this->height()/170));
+  emit ( sizeChanged( this->width()/150, this->height()/150));
 
 //  setCentralWidget(this->qml_page);
-  ui.stackedWidget->addWidget(qml_page);
-  ui.stackedWidget->addWidget(game_page);
-  ui.stackedWidget->setCurrentWidget(qml_page);
+  ui.stackedWidget->addWidget(qml_Page_);
+  ui.stackedWidget->addWidget(game_page_);
+  ui.stackedWidget->setCurrentWidget(qml_Page_);
 }
 
 //void MainWindow::DrawCircle(MovableUnit unit) {
@@ -67,16 +70,16 @@ MainWindow::MainWindow(QSettings *settings) : QMainWindow()
 MainWindow::~MainWindow()
 {
   this->writeSettings();
-  delete this->qml_page;
-  delete this->game_page;
+  delete this->qml_Page_;
+  delete this->game_page_;
 }
 
 void MainWindow::SetUpSceneView(SceneManager *scene) {
-  game_page->setScene(scene);
+  game_page_->setScene(scene);
 }
 
 void MainWindow::UiSizeChanged() {
-  QGraphicsObject *background = qml_page->rootObject();
+  QGraphicsObject *background = qml_Page_->rootObject();
   int a(background->property("width").toInt()),
       b(background->property("height").toInt());
 
@@ -88,6 +91,7 @@ void MainWindow::UiSizeChanged() {
   }
   int new_size = (a > 150)? a : 150;
 
+  qDebug() << "Current main window size is" << this->size();
   qDebug() << "Current tile size is" << new_size;
   background->setProperty("tile_size",new_size);
   emit (tileSizeChanged(new_size));
@@ -139,19 +143,19 @@ cv::Mat MainWindow::TakeScreenshot() {
 //}
 
 void MainWindow::Toggle() {
-  if (ui.stackedWidget->currentIndex() == ui.stackedWidget->indexOf(qml_page))
+  if (ui.stackedWidget->currentIndex() == ui.stackedWidget->indexOf(qml_Page_))
   {
-    ui.stackedWidget->setCurrentWidget(game_page);
+    ui.stackedWidget->setCurrentWidget(game_page_);
   }
   else
   {
-    ui.stackedWidget->setCurrentWidget(qml_page);
+    ui.stackedWidget->setCurrentWidget(qml_Page_);
   }
 }
 
 void MainWindow::RepaintGamePage(QColor color)
 {
-  game_page->repaint();
+  game_page_->repaint();
   emit (ViewColorCleared(color));
 }
 
@@ -159,24 +163,25 @@ void MainWindow::readSettings()
 {
 //  QSettings settings(QSettings::IniFormat, QSettings::UserScope,
 //                    "Tri Chu", "Astronomican");
-//  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+  QSettings settings("Astronomican.ini", QSettings::IniFormat);
 
- settings_->beginGroup("MainWindow");
- resize(settings_->value("size", QSize(800, 600)).toSize());
- move(settings_->value("pos", QPoint(200, 200)).toPoint());
- settings_->endGroup();
+ settings.beginGroup("MainWindow");
+ resize(settings.value("size", QSize(800, 600)).toSize());
+ move(settings.value("pos", QPoint(200, 200)).toPoint());
+ settings.endGroup();
 }
 
 void MainWindow::writeSettings()
 {
+
 //  QSettings settings(QSettings::IniFormat, QSettings::UserScope,
 //                     "Tri Chu", "Astronomican");
-//  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+  QSettings settings("Astronomican.ini", QSettings::IniFormat);
 
-  settings_->beginGroup("MainWindow");
-  settings_->setValue("size", this->size());
-  settings_->setValue("pos", this->pos());
-  settings_->endGroup();
+  settings.beginGroup("MainWindow");
+  settings.setValue("size", this->size());
+  settings.setValue("pos", this->pos());
+  settings.endGroup();
 }
 
 //void MainWindow::repaintGamePage() {
@@ -186,5 +191,49 @@ void MainWindow::writeSettings()
 void MainWindow::closeEvent(QCloseEvent *event) {
   writeSettings();
   emit(Quit());
-//  event->accept();
+  //  event->accept();
+}
+
+void MainWindow::SwitchToGamePage()
+{
+  if(ui.stackedWidget->currentIndex() != ui.stackedWidget->indexOf(game_page_))
+    ui.stackedWidget->setCurrentWidget(game_page_);
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+  switch( e->key() )
+  {
+  case Qt::Key_Escape:
+    close();
+    break;
+  case Qt::Key_C:
+    emit(Calibrate());
+    break;
+  case Qt::Key_D:
+    emit(Detect());
+    break;
+  case Qt::Key_R:
+    if(this->isMaximized())
+      resize(800, 600);
+    else
+      this->showMaximized();
+    break;
+  case Qt::Key_T:
+    this->Toggle();
+    break;
+  case Qt::Key_1:
+    emit(DiceRegisterSetup());
+    break;
+  case Qt::Key_2:
+    emit(DiceRegisterMain());
+    break;
+  }
+}
+
+QSize MainWindow::GetUISize()
+{
+  QPixmap screenshot = QPixmap::grabWidget
+      (ui.stackedWidget->currentWidget());
+  return screenshot.size();
 }

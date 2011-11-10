@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
   CameraFeed camera1;
   main_controller.AddCameraFeed(&camera1);
 
-  MainWindow main_window(settings);
+  MainWindow main_window;
   main_controller.SetUpMainWindow(&main_window);
 
   main_controller.GetReady();

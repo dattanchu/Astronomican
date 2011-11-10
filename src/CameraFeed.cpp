@@ -8,34 +8,42 @@ CameraFeed::CameraFeed() {
   timer_.setInterval(100);
   connect(&timer_, SIGNAL(timeout()),
           this, SLOT(Capture()));
+
+  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+  settings.beginGroup("Main Camera");
+  size_ = (settings.value("frame_size", QSize(1280, 720))).toSize();
+
+  settings.endGroup();
+
+}
+
+CameraFeed::~CameraFeed() {
+  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+  settings.beginGroup("Main Camera");
+  settings.setValue("frame_size", size_);
+  settings.endGroup();
 }
 
 void CameraFeed::StartCapturing() {
-//  if (!device_.isOpened()) {
-//    if (!device_.open(1)) {
-//      throw std::runtime_error("Unable to capture from device id 1");
-//    }
-//  }
+  if (!device_.isOpened()) {
+    if (!device_.open(1)) {
+      throw std::runtime_error("Unable to capture from device id 1");
+    }
+  }
+  device_.set(CV_CAP_PROP_FRAME_WIDTH, size_.width());
+  device_.set(CV_CAP_PROP_FRAME_HEIGHT, size_.height());
 
-//  is_capturing_ = true;
   timer_.start();
-
-
-//  while (is_capturing_) {
-//    QApplication::processEvents();
-//    device_ >> frame_buffer_;
-//    emit HasNewFrame(frame_buffer_);
-//  }
 }
 
 void CameraFeed::StartCapturing(int device_id) {
-//  if (device_.isOpened()) {
-//    device_.release();
-//  }
+  if (device_.isOpened()) {
+    device_.release();
+  }
 
-//  if (!device_.open(device_id)) {
-//    throw std::runtime_error("Unable to capture from device id " + device_id);
-//  }
+  if (!device_.open(device_id)) {
+    throw std::runtime_error("Unable to capture from device id " + device_id);
+  }
 
   StartCapturing();
 }
@@ -51,26 +59,19 @@ cv::Mat CameraFeed::CaptureOneShot() {
       throw std::runtime_error("Unable to capture from device id 1");
     }
   }
-  device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-  device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-
   device_ >> frame_buffer_;
-  emit (FrameCaptured(frame_buffer_));
   return frame_buffer_.clone();
 }
 
 cv::Mat CameraFeed::CaptureOneShot( QColor color ) {
   if (!device_.isOpened()) {
-    if (!device_.open(1)) {
+    if (!device_.open(0)) {
       throw std::runtime_error("Unable to capture from device id 1");
     }
   }
-  device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-  device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-
   device_ >> frame_buffer_;
-  emit (FrameCaptured(frame_buffer_, color));
-  return frame_buffer_.clone();
+//  emit (FrameCaptured(frame_buffer_, color));
+  return frame_buffer_;
 }
 
 void CameraFeed::SetHomography(cv::Mat new_homography) {
@@ -84,16 +85,18 @@ cv::Mat CameraFeed::GetHomography() const{
 void CameraFeed::Capture()
 {
   if (!device_.isOpened()) {
-    if (!device_.open(1)) {
+    if (!device_.open(0)) {
       throw std::runtime_error("Unable to capture from device id 1");
     }
   }
-  device_.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-  device_.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-
   QApplication::processEvents();
   device_ >> frame_buffer_;
   emit (HasNewFrame(frame_buffer_));
+}
+
+QSize CameraFeed::GetSize()
+{
+  return size_;
 }
 
 //void CameraFeed::StopCalibrating() {

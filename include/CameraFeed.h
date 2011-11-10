@@ -5,11 +5,15 @@
 #include <highgui.h>
 #include <QColor>
 #include <QTimer>
+#include <QSize>
 
 class CameraFeed : public QObject {
   Q_OBJECT
 public:
   CameraFeed();
+  virtual ~CameraFeed();
+  QSize GetSize();
+
 signals:
   void HasNewFrame(const cv::Mat& frame);
   void FrameCaptured(const cv::Mat& frame);
@@ -32,6 +36,8 @@ private:
 //  bool is_calibrating_;
   cv::VideoCapture device_;
   QTimer timer_;
+  QSize size_;
+
 
 };
 

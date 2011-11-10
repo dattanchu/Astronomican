@@ -8,8 +8,14 @@
 #include <QPixmap>
 #include <QString>
 #include <QSettings>
+#include <QPen>
+#include <QBrush>
+#include <QPainter>
+#include <QList>
 
 #include <MainWindow.h>
+#include <DiceSet.h>
+
 class CameraFeed;
 class SceneManager;
 /**
@@ -17,6 +23,7 @@ class SceneManager;
   */
 class MainController: public QObject {
   Q_OBJECT
+
 public:
   MainController(QSettings *settings);
   ~MainController();
@@ -24,7 +31,8 @@ public:
   void SetUpMainWindow(MainWindow *window);
 //  void readSettings();
 //  void writeSettings();
-
+  void TemplateMatching(cv::Mat img, vector<cv::Mat> templates, int match_method);
+  void ProjectToVirtualScene(const cv::Mat& input, cv::Mat& output);
 signals:
   void Quit();
 
@@ -32,6 +40,8 @@ public slots:
   void TileSizeChanged(int new_tile_size);
   void CalibrateCamera();
   void DetectNewObject();
+  void DiceRegisterSetup();
+  void DiceRegisterMain();
   void SetSize(int new_width, int new_height);
   void GetReady();
   void HandleNewFrame(const cv::Mat& new_frame);
@@ -41,7 +51,8 @@ public slots:
 
 private:
   QSettings* settings_;
-  cv::Mat BackgroundSubstraction();
+  QList<QGraphicsItem*> diceSpots_;
+//  cv::Mat BackgroundSubstraction();
   CameraFeed* main_camera_;
   SceneManager* scene_;
   MainWindow* main_window_;

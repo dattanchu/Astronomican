@@ -11,7 +11,7 @@ SceneManager::~SceneManager() {
 
 void SceneManager::SetSize(const QSize &new_size) {
     size_ = new_size;
-    qDebug() << "Current size is:" << size_;
+    qDebug() << "Current board size is:" << size_;
 }
 
 QSize& SceneManager::GetSize() {
@@ -50,24 +50,24 @@ void SceneManager::writeSettings()
 {
 //  QSettings settings(QSettings::IniFormat, QSettings::UserScope,
 //                     "Tri Chu", "Astronomican");
-//  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+  QSettings settings("Astronomican.ini", QSettings::IniFormat);
 
-  settings_->beginGroup("SceneManager");
-  settings_->setValue("size", this->GetSize());
-  settings_->setValue("tileSize", this->GetTileSize());
-  settings_->endGroup();
+  settings.beginGroup("SceneManager");
+  settings.setValue("size", this->GetSize());
+  settings.setValue("tileSize", this->GetTileSize());
+  settings.endGroup();
 }
 
 void SceneManager::readSettings()
 {
 //  QSettings settings(QSettings::IniFormat, QSettings::UserScope,
 //                     "Tri Chu", "Astronomican");
-//  QSettings settings("Astronomican.ini", QSettings::IniFormat);
+  QSettings settings("Astronomican.ini", QSettings::IniFormat);
 
-  settings_->beginGroup("SceneManager");
-  size_ = settings_->value("size", QSize(800, 600)).toSize();
-  tile_size_ = settings_->value("tileSize", 150).toInt();
-  settings_->endGroup();
+  settings.beginGroup("SceneManager");
+  size_ = settings.value("size", QSize(11, 5)).toSize();
+  tile_size_ = settings.value("tileSize", 150).toInt();
+  settings.endGroup();
 }
 
 

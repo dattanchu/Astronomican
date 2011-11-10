@@ -55,6 +55,13 @@
         </spacer>
        </item>
        <item>
+        <widget class="QPushButton" name="DiceRegister">
+         <property name="text">
+          <string>Registering Dice</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="Toggle">
          <property name="text">
           <string>Toggle Game/Calib</string>

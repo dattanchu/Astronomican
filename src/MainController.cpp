@@ -19,13 +19,15 @@ MainController::MainController(QSettings *settings) {
   main_camera_ = NULL;
   settings_ = settings;
   scene_ = new SceneManager(settings_);
+  scene_->setBackgroundBrush(Qt::black);
 }
 
 MainController::~MainController() {
-  delete main_window_;
-  delete scene_;
+//  delete main_window_;
+
   main_camera_->StopCapturing();
-  delete main_camera_;
+//  delete main_camera_;
+  delete scene_;
 }
 
 void MainController::AddCameraFeed(CameraFeed *camera_feed) {
@@ -49,12 +51,16 @@ void MainController::GetReady() {
           this, SLOT(SetSize(int, int)));
   connect(main_window_, SIGNAL(tileSizeChanged(int)),
           this, SLOT(TileSizeChanged(int)));
-  connect(main_window_, SIGNAL(calibrate()),
+  connect(main_window_, SIGNAL(Calibrate()),
           this, SLOT(CalibrateCamera()));
-  connect(main_window_, SIGNAL(detect()),
+  connect(main_window_, SIGNAL(Detect()),
           this, SLOT(DetectNewObject()));
   connect(main_window_, SIGNAL(Quit()),
           this, SLOT(Exit()));
+  connect(main_window_, SIGNAL(DiceRegisterSetup()),
+          this, SLOT(DiceRegisterSetup()));
+  connect(main_window_, SIGNAL(DiceRegisterMain()),
+          this, SLOT(DiceRegisterMain()));
 //  connect(main_window_, SIGNAL(NewScreenShot(cv::Mat*)),
 //          this, SLOT(HandleNewScreenshot(cv::Mat*)));
 //  connect(scene_, SIGNAL(DrawUnit(MovableUnit)),
@@ -63,7 +69,7 @@ void MainController::GetReady() {
 
 void MainController::HandleNewFrame(const cv::Mat& new_frame) {
   cv::imshow("Current frame", new_frame);
-  cv::waitKey(1);
+  cv::waitKey(10);
 }
 
 //TODO: automate the flip camera flag and add the calibration function to
@@ -81,12 +87,12 @@ void MainController::CalibrateCamera() {
   cv::Mat capture = main_camera_->CaptureOneShot();
   cv::Mat view = main_window_->TakeScreenshot().clone();
 
-  cv::Mat viewgray;
+  cv::Mat capture_gray;
 
   if(FLIP_CAMERA_VIEW)
     cv::flip(capture, capture, -1);
 
-  cv::imwrite("view.png",capture);
+  cv::imwrite("capture.png",capture);
 
   //Step 2: detect the checkerboard and return the land marks coordinate in
   //camera plane
@@ -99,8 +105,8 @@ void MainController::CalibrateCamera() {
 //  int board_h = floor(scene_size.height()/tile_size)-2;
 //  cv::Size board_size(board_w, board_h);
   cv::Size board_size(scene_size.width() - 1, scene_size.height() - 1);
-  cv::cvtColor(capture,viewgray,CV_BGR2GRAY);
-  cv::imwrite("viewgray.png", viewgray);
+  cv::cvtColor(capture,capture_gray,CV_BGR2GRAY);
+  cv::imwrite("capture_gray.png", capture_gray);
 
   bool found = cv::findChessboardCorners(capture, board_size, corners,
                                          CV_CALIB_CB_ADAPTIVE_THRESH |
@@ -109,7 +115,7 @@ void MainController::CalibrateCamera() {
 
   if(found)
   {
-    cv::cornerSubPix(viewgray, corners,
+    cv::cornerSubPix(capture_gray, corners,
                      cv::Size(11, 11),
                      cv::Size(-1,-1),
                      cv::TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER,
@@ -220,51 +226,91 @@ void MainController::TileSizeChanged(int new_tile_size) {
 
 void MainController::DetectNewObject() {
 
-  cv::Mat capture  = main_camera_->CaptureOneShot(), gray, edges;
+  cv::Mat capture  = main_camera_->CaptureOneShot(), captureGray, edges;
   cv::Mat view = main_window_->TakeScreenshot();
   cv::Mat CVM; //capture to view matrix
-  cv::Mat H = main_camera_->GetHomography().clone();
+//  cv::Mat H = main_camera_->GetHomography().clone();
 
   if(FLIP_CAMERA_VIEW)
     cv::flip(capture, capture, -1);
 
   //Step 0:background substraction
   //0-1 transform the capture image to view space
-  cv::warpPerspective(
-        capture,
-        CVM,
-        H,
-        cv::Size(view.cols,view.rows),
-        (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
-        );
+//  cv::warpPerspective(
+//        capture,
+//        CVM,
+//        H,
+//        cv::Size(view.cols,view.rows),
+//        (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
+//        );
+  ProjectToVirtualScene(capture, CVM);
   cv::imwrite("CVM.png", CVM);
   //0-2 Substract the CVM to current window view
   cv::Mat CVM_gray;
-  cv::cvtColor(CVM, CVM_gray, CV_BGR2GRAY);
-  cv::GaussianBlur(view, view, cv::Size(3, 5) )
+  cv::Mat blur_view;
+//  cv::Mat foreground_gray;
+  cv::Mat foreground;
+//  cv::Mat blur_view_gray;
 
+  cv::GaussianBlur(view, blur_view, cv::Size(45, 55), 0, 0 );
+
+  cv::cvtColor(CVM, CVM_gray, CV_BGR2GRAY);
+//  cv::cvtColor(blur_view, blur_view_gray, CV_BGR2GRAY);
+//  cv::imwrite("CVM_gray.png", CVM_gray);
+//  cv::imwrite("blur_view_gray.png", blur_view_gray);
+
+  cv::cvtColor(blur_view, blur_view, CV_BGRA2BGR);
+  cv::cvtColor(CVM, CVM, CV_BGRA2BGR);
+
+  cv::imwrite("CVM.png", CVM);
+  cv::imwrite("blur_view.png", blur_view);
+
+//  cv::subtract(blur_view_gray, CVM_gray, foreground_gray);
+  cv::subtract(blur_view, CVM, foreground);
+  cv::imwrite("foreground.png", foreground);
+//  cv::imwrite("foreground_gray.png", foreground_gray);
+
+  cv::cvtColor(foreground, foreground, CV_BGR2GRAY);
+  cv::threshold(foreground, foreground, 90, 220, CV_THRESH_BINARY);
+  cv::imwrite("foregroundThr.png", foreground);
+
+//  cv::threshold(foreground_gray, foreground_gray, 90, 250, CV_THRESH_BINARY);
+//  cv::imwrite("foreground_grayThr.png", foreground_gray);
 
   //Step 1: find the circles
-  cv::cvtColor(capture, gray, CV_BGR2GRAY);
-  cv::GaussianBlur(gray, gray, cv::Size(9,9), 2, 2);
-  cv::imwrite("gaussianBlur.png", gray);
+//  cv::cvtColor(capture, captureGray, CV_BGR2GRAY);
+//  cv::GaussianBlur(captureGray, captureGray, cv::Size(9,9), 2, 2);
+//  cv::imwrite("gaussianBlur.png", captureGray);
 
-  cv::Canny(gray, edges, 100.0, 30.0, 3);
-  cv::imwrite ("edges.png", edges);
-
+//  cv::Canny(captureGray, edges, 100.0, 30.0, 3);
+//  cv::imwrite ("edges.png", edges);
+    cv::Canny(CVM_gray, edges, 100.0, 30.0, 3);
+    cv::imwrite ("edges.png", edges);
+//  vector<cv::Vec3f> circles;
+//  cv::HoughCircles(captureGray,
+//                   circles,
+//                   CV_HOUGH_GRADIENT,
+//                   1,
+//                   captureGray.rows/64,
+//                   100,
+//                   30.0,
+//                   5,
+//                   35
+//                   );
   vector<cv::Vec3f> circles;
-  cv::HoughCircles(gray,
+  cv::HoughCircles(CVM_gray,
                    circles,
                    CV_HOUGH_GRADIENT,
                    1,
-                   gray.rows/64,
+                   CVM_gray.rows/12,
                    100,
                    30.0,
-                   5,
-                   35
+                   50,
+                   200
                    );
 
   //Step 2: print out the camera image with circles marked
+  cv::Mat CVM_detect_result = CVM.clone();
   if(circles.size() > 0)
   {
     qDebug() << "found" << circles.size() << "in the screen";
@@ -273,19 +319,20 @@ void MainController::DetectNewObject() {
       cv::Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
       int radius = cvRound(circles[i][2]);
       // draw the circle center
-      circle( capture, center, 3, cv::Scalar(0,255,0), -1, 8, 0 );
+      circle( CVM_detect_result, center, 3, cv::Scalar(0,255,0), -1, 8, 0 );
       // draw the circle outline
-      circle( capture, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );
+      circle( CVM_detect_result, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );
     }
-    cv::imwrite("detect_result.png", capture);
+    cv::imwrite("CVM_detect_result.png", CVM_detect_result);
   }
   else
   {
     qDebug() << "no circles found";
   }
 
-  //Step 3: apply homogrpahy to transform the coordination from
-  //camera view to computer display view
+
+//  //Step 3: apply homogrpahy to transform the coordination from
+//  //camera view to computer display view
   vector<cv::Point2f> points;
   for( int i = 0; i < circles.size(); i++)
   {
@@ -294,7 +341,7 @@ void MainController::DetectNewObject() {
   cv::Mat view_plane_points(points);
   cv::Mat display_plane_points;
 
-  cv::perspectiveTransform(view_plane_points, display_plane_points, H);
+//  cv::perspectiveTransform(view_plane_points, display_plane_points, H);
 
   //Step 4: Make sure the found units are all unique
   //for now it just clean the scene manager tracking unit vector
@@ -324,22 +371,6 @@ void MainController::HandleNewScreenshot(cv::Mat* new_screenshot) {
   cv::imwrite("screenshot.png", *new_screenshot);
 }
 
-cv::Mat MainController::BackgroundSubstraction() {
-//  Step 1: detect the screen area and clear out the area outside
-//  cv::Mat screenshot = main_camera_->Capture();
-//  cv::Mat cropped_screenshot = cv::Mat(screenshot, cv::Rect());
-
-//  Step 2: using homography matrix calculate the projected background
-//  cv::Mat background = main_window_->TakeScreenshot();
-//  cv::Mat projected_background;
-//  cv::Mat H = scene_->GetHomo();
-//  cv::perspectiveTransform(background, projected_background, H);
-//  Step 3: using matrix substraction to found the different pixels
-//  cv::Mat foreground;
-
-  //  Step 4: return the processed picture
-}
-
 //void MainController::readSettings()
 //{
 ////  QSettings settings("Tri Chu", "Astronomican");
@@ -354,11 +385,136 @@ cv::Mat MainController::BackgroundSubstraction() {
 
 void MainController::Exit()
 {
-  delete scene_;
   main_camera_->StopCapturing();
   QApplication::exit(0);
 }
 
+void MainController::TemplateMatching(cv::Mat img, vector<cv::Mat> templates, int match_method)
+{
+  cv::Mat img_display;
+  img.copyTo(img_display);
+
+
+  for(vector<cv::Mat>::iterator it = templates.begin(); it < templates.end(); it++)
+  {
+    int result_cols = img.cols - it->cols + 1;
+    int result_rows = img.rows - it->rows + 1;
+
+    cv::Mat result(result_rows, result_cols, CV_32FC1);
+
+    cv::matchTemplate(img, *it, result, match_method);
+    cv::normalize( result, result, 0, 1, cv::NORM_MINMAX, -1 );
+
+    double minVal;
+    double maxVal;
+    cv::Point minLoc;
+    cv::Point maxLoc;
+    cv::Point matchLoc;
+
+    cv::minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat() );
+
+    if( match_method  == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED )
+        { matchLoc = minLoc; }
+      else
+        { matchLoc = maxLoc; }
+
+    cv::rectangle( img_display,
+                   matchLoc,
+                   cv::Point( matchLoc.x + it->cols , matchLoc.y + it->rows ),
+                   cv::Scalar::all(0),
+                   2, 8, 0 );
+
+    cv::rectangle( result,
+                   matchLoc,
+                   cv::Point( matchLoc.x + it->cols , matchLoc.y + it->rows ),
+                   cv::Scalar::all(0),
+                   2, 8, 0 );
+
+
+//    cv::imshow( result_window, result );
+    cv::imwrite("template_search_result.png", result);
+  }
+  cv::imwrite("img_display.png", img_display);
+
+}
+
+void MainController::DiceRegisterSetup()
+{
+  main_window_->SwitchToGamePage();
+  int offset = scene_->GetTileSize();
+  scene_->clear();
+  diceSpots_.clear();
+
+  QBrush brush(Qt::red, Qt::SolidPattern);
+  QPen pen(brush, 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin);
+
+  for(int i = 0; i < 6; i++)
+  {
+    QGraphicsEllipseItem *diceSpot;
+    QRect rect((i%3)*offset,
+               (i/3)*offset,
+               50,
+               50);
+    diceSpot = scene_->addEllipse(
+          rect,
+          pen,
+          QBrush());
+    diceSpots_.push_back(diceSpot);
+  }
+}
+
+void MainController::DiceRegisterMain()
+{
+  cv::Mat capture = main_camera_->CaptureOneShot();
+  cv::Mat CVM;
+  DiceSet newDiceSet;
+
+  ProjectToVirtualScene(capture, CVM);
+  cv::imwrite("dice_register_CVM.PNG", CVM);
+  int tileSize = scene_->GetTileSize();
+
+  vector<cv::Mat> ROIs;
+  int count = 0;
+  foreach(QGraphicsItem *spot, diceSpots_)
+  {
+    cv::Mat ROI;
+    int x_offset = (count%3)*tileSize + CVM.size().width/2;
+    int y_offset = (count/3)*tileSize + CVM.size().height/2;
+//    qDebug() << x_offset << y_offset;
+//    qDebug() << CVM.size().width << CVM.size().height;
+    ROI = CVM(cv::Range( y_offset - 20, y_offset + 70),
+        cv::Range( x_offset - 20, x_offset + 70));
+    ROIs.push_back(ROI);
+//    QString temp = "dice";
+//    temp.append(QString::number(count));
+//    temp.append(".PNG");
+//    cv::imwrite(temp.toStdString(), ROI);
+    count++;
+  }
+  newDiceSet.RegisterTempls("newDiceSet", ROIs);
+  newDiceSet.SaveTemplate();
+}
+
+void MainController::ProjectToVirtualScene(const cv::Mat& input, cv::Mat& output)
+{
+  cv::Mat H = main_camera_->GetHomography().clone();
+  cv::Mat flipped_input;
+  if(FLIP_CAMERA_VIEW)
+    cv::flip(input, flipped_input, -1);
+  else
+    flipped_input = input;
+
+  QSize view_size = main_window_->GetUISize();
+
+  cv::warpPerspective(
+        flipped_input,
+        output,
+        H,
+        cv::Size(view_size.width(),view_size.height()),
+        (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
+        );
+
+}
 //void MainController::GetScreenAreaPicture(QColor color)
 //{
 //  QString filename = color.name() + "_screen.png";

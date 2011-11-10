@@ -16,11 +16,10 @@ class SceneManager : public QGraphicsScene {
   Q_OBJECT
 public:
   SceneManager(QSettings *settings);
-  ~SceneManager();
+  virtual ~SceneManager();
 //  void TrackNewMovableUnit(MovableUnit *new_unit);
 //  int TrackingUnitsNumber();
 //  void ClearTracker();
-
   void SetSize (const QSize &new_size);
   void SetTileSize (const int new_tile_size);
   // TODO(tchu): Move to QSize GetSize()Tracconst as appropriate
