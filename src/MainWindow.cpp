@@ -40,7 +40,7 @@ MainWindow::MainWindow() : QMainWindow()
   connect(ui.Toggle, SIGNAL(clicked()),
           this, SLOT(Toggle()));
   connect(ui.DiceRegister, SIGNAL(clicked()),
-          this, SIGNAL(DiceRegister()));
+          this, SIGNAL(DiceRegisterSetup()));
 
   connect(background, SIGNAL(sizeChanged(int,int)),
           this, SIGNAL(sizeChanged(int,int)));

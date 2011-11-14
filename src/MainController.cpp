@@ -27,6 +27,7 @@ MainController::~MainController() {
 
   main_camera_->StopCapturing();
 //  delete main_camera_;
+  registered_dice_sets_.clear();
   delete scene_;
 }
 
@@ -143,33 +144,33 @@ void MainController::CalibrateCamera() {
           3.0);
     main_camera_->SetHomography(H);
 
-    //Step 3-1: Test the homography matrix
-    cv::Mat test_points;
-    cv::Mat temp = view.clone();
-    cv::perspectiveTransform(cv::Mat(corners), test_points, H);
-    cv::drawChessboardCorners(temp, board_size, test_points, found);
-    cv::imwrite("homography_test.png", temp);
+//    //Step 3-1: Test the homography matrix
+//    cv::Mat test_points;
+//    cv::Mat temp = view.clone();
+//    cv::perspectiveTransform(cv::Mat(corners), test_points, H);
+//    cv::drawChessboardCorners(temp, board_size, test_points, found);
+//    cv::imwrite("homography_test.png", temp);
 
-    //Step 3-2: Test invert homography matrix
-    cv::Mat H_i = H.inv();
-    cv::Mat test_points1;
-    cv::perspectiveTransform(cv::Mat(display_points), test_points1, H_i);
-    temp = capture.clone();
-    cv::drawChessboardCorners(temp, board_size, test_points1, found);
-    cv::imwrite("homography_inverse_test.png", temp);
+//    //Step 3-2: Test invert homography matrix
+//    cv::Mat H_i = H.inv();
+//    cv::Mat test_points1;
+//    cv::perspectiveTransform(cv::Mat(display_points), test_points1, H_i);
+//    temp = capture.clone();
+//    cv::drawChessboardCorners(temp, board_size, test_points1, found);
+//    cv::imwrite("homography_inverse_test.png", temp);
 
-    //Step 3-3: Test homography by drawing the
-    //captured chessboard to the vitural view
-    cv::Mat output;
-    cv::warpPerspective(
-          capture,
-          output,
-          H,
-          cv::Size(view.cols,view.rows),
-          (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
-          );
-    cv::drawChessboardCorners(output, board_size, test_points, found);
-    cv::imwrite("homography_test2.png", output);
+//    //Step 3-3: Test homography by drawing the
+//    //captured chessboard to the vitural view
+//    cv::Mat output;
+//    cv::warpPerspective(
+//          capture,
+//          output,
+//          H,
+//          cv::Size(view.cols,view.rows),
+//          (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
+//          );
+//    cv::drawChessboardCorners(output, board_size, test_points, found);
+//    cv::imwrite("homography_test2.png", output);
 
   }
 
@@ -338,7 +339,7 @@ void MainController::DetectNewObject() {
   {
     points.push_back(cv::Point2f(circles[i][0], circles[i][1]));
   }
-  cv::Mat view_plane_points(points);
+//  cv::Mat view_plane_points(points);
   cv::Mat display_plane_points;
 
 //  cv::perspectiveTransform(view_plane_points, display_plane_points, H);
@@ -389,60 +390,11 @@ void MainController::Exit()
   QApplication::exit(0);
 }
 
-void MainController::TemplateMatching(cv::Mat img, vector<cv::Mat> templates, int match_method)
-{
-  cv::Mat img_display;
-  img.copyTo(img_display);
-
-
-  for(vector<cv::Mat>::iterator it = templates.begin(); it < templates.end(); it++)
-  {
-    int result_cols = img.cols - it->cols + 1;
-    int result_rows = img.rows - it->rows + 1;
-
-    cv::Mat result(result_rows, result_cols, CV_32FC1);
-
-    cv::matchTemplate(img, *it, result, match_method);
-    cv::normalize( result, result, 0, 1, cv::NORM_MINMAX, -1 );
-
-    double minVal;
-    double maxVal;
-    cv::Point minLoc;
-    cv::Point maxLoc;
-    cv::Point matchLoc;
-
-    cv::minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat() );
-
-    if( match_method  == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED )
-        { matchLoc = minLoc; }
-      else
-        { matchLoc = maxLoc; }
-
-    cv::rectangle( img_display,
-                   matchLoc,
-                   cv::Point( matchLoc.x + it->cols , matchLoc.y + it->rows ),
-                   cv::Scalar::all(0),
-                   2, 8, 0 );
-
-    cv::rectangle( result,
-                   matchLoc,
-                   cv::Point( matchLoc.x + it->cols , matchLoc.y + it->rows ),
-                   cv::Scalar::all(0),
-                   2, 8, 0 );
-
-
-//    cv::imshow( result_window, result );
-    cv::imwrite("template_search_result.png", result);
-  }
-  cv::imwrite("img_display.png", img_display);
-
-}
-
 void MainController::DiceRegisterSetup()
 {
   main_window_->SwitchToGamePage();
   int offset = scene_->GetTileSize();
-  scene_->clear();
+  qDeleteAll( scene_->items() );
   diceSpots_.clear();
 
   QBrush brush(Qt::red, Qt::SolidPattern);
@@ -467,7 +419,7 @@ void MainController::DiceRegisterMain()
 {
   cv::Mat capture = main_camera_->CaptureOneShot();
   cv::Mat CVM;
-  DiceSet newDiceSet;
+  DiceSet* newDiceSet = new DiceSet();
 
   ProjectToVirtualScene(capture, CVM);
   cv::imwrite("dice_register_CVM.PNG", CVM);
@@ -485,14 +437,19 @@ void MainController::DiceRegisterMain()
     ROI = CVM(cv::Range( y_offset - 20, y_offset + 70),
         cv::Range( x_offset - 20, x_offset + 70));
     ROIs.push_back(ROI);
+
+    /// Print out current dice image for double check purpose
 //    QString temp = "dice";
 //    temp.append(QString::number(count));
 //    temp.append(".PNG");
 //    cv::imwrite(temp.toStdString(), ROI);
-    count++;
+//    count++;
+
   }
-  newDiceSet.RegisterTempls("newDiceSet", ROIs);
-  newDiceSet.SaveTemplate();
+  newDiceSet->RegisterTempls("newDiceSet", ROIs);
+  newDiceSet->SaveTemplate();
+  registered_dice_sets_.push_back(newDiceSet);
+  DiceSet::TestTemplateMatching();
 }
 
 void MainController::ProjectToVirtualScene(const cv::Mat& input, cv::Mat& output)
@@ -514,6 +471,12 @@ void MainController::ProjectToVirtualScene(const cv::Mat& input, cv::Mat& output
         (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
         );
 
+}
+
+void MainController::CalGamePoint(int number_of_dices)
+{
+  cv::Mat capture = main_camera_->CaptureOneShot();
+  cv::Mat CVM;
 }
 //void MainController::GetScreenAreaPicture(QColor color)
 //{

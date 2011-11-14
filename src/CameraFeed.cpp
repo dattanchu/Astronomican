@@ -65,7 +65,7 @@ cv::Mat CameraFeed::CaptureOneShot() {
 
 cv::Mat CameraFeed::CaptureOneShot( QColor color ) {
   if (!device_.isOpened()) {
-    if (!device_.open(0)) {
+    if (!device_.open(1)) {
       throw std::runtime_error("Unable to capture from device id 1");
     }
   }
@@ -85,7 +85,7 @@ cv::Mat CameraFeed::GetHomography() const{
 void CameraFeed::Capture()
 {
   if (!device_.isOpened()) {
-    if (!device_.open(0)) {
+    if (!device_.open(1)) {
       throw std::runtime_error("Unable to capture from device id 1");
     }
   }
